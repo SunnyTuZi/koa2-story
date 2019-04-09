@@ -6,12 +6,11 @@ import onerror from 'koa-onerror'
 import bodyparser from 'koa-bodyparser'
 import logger from 'koa-logger'
 import './mongodb/db'
+import router from './routes/index'
 
 const app = new Koa();
 
 
-const index = require('./routes/index')
-const users = require('./routes/users')
 
 // error handler
 onerror(app)
@@ -37,8 +36,7 @@ app.use(async (ctx, next) => {
 })
 
 // routes
-app.use(index.routes(), index.allowedMethods())
-app.use(users.routes(), users.allowedMethods())
+router(app);
 
 // error-handling
 app.on('error', (err, ctx) => {
