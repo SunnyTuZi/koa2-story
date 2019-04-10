@@ -10,8 +10,6 @@ import router from './routes/index'
 
 const app = new Koa();
 
-
-
 // error handler
 onerror(app)
 

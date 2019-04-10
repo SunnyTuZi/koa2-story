@@ -1,16 +1,16 @@
-import { UserModel } from "../../model/user/userModel";
+import UserModel from '../../model/user/userModel'
 import formidable from 'formidable'
 import crypto from 'crypto'
 
 class User {
     constructor() {
         this.encryption = this.encryption.bind(this);
+        this.register = this.register.bind(this)
     }
 
     async register(ctx,next) {
-        const form = new formidable.IncomingForm();
-
-        form.parse(ctx.req, async (err, fields, files) => {
+         const form = new formidable.IncomingForm();
+         form.parse(ctx.req, async (err, fields, files) => {
             if (err) {
                 ctx.body = {
                     status: 0,
@@ -19,29 +19,31 @@ class User {
                 }
             }
             const {account, psw} = fields;
-            console.log(account)
+            const newPsw = this.encryption(psw);
             try {
-                const user = UserModel.findOne({account});
+                const user = await UserModel.findOne({account});
                 if (user) {
                     ctx.body = {
                         status: 0,
                         type: 'USER_HAS_EXIST',
                         message: '该用户已经存在',
                     }
+                    console.log('exit')
                 } else {
-                    const newPsw = this.encryption(psw);
                     const newUser = {
                         account: account,
                         psw: newPsw
                     }
-                    await UserModel.create(newUser);
+                    // await UserModel.create(newUser);
+                    console.log('sccuess')
                     ctx.body = {
                         status: 1,
                         message: '注册管理员成功',
                     }
+
                 }
             } catch (err) {
-
+                console.log('error')
                 ctx.body = {
                     status: 0,
                     type: 'REGISTER_ADMIN_FAILED',
@@ -49,6 +51,9 @@ class User {
                 }
             }
         })
+        console.log(ctx.request.body)
+
+
     }
 
     encryption(password) {

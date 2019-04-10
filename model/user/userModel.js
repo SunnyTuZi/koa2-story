@@ -12,6 +12,4 @@ const userSchema = new Schema({
     createDate: { type: Date,default: Date.now }
 })
 const User = mongoose.model('User',userSchema)
-export {
-    User
-}
+export default User
