@@ -4,9 +4,8 @@ const router = new Router({
     prefix:'/user'
 });
 
-router.post('/register',User.register);
-router.get('/', function (ctx, next) {
-    ctx.body = 'this is a users response!'
-})
+router.post('/register', User.register);
+router.post('/login', User.login);
+router.post('/uploadHead', User.uploadHead);
 
 export default router

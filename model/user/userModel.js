@@ -8,6 +8,7 @@ const userSchema = new Schema({
     age: Number,
     username: String,
     psw: String,
+    head: String,
     status: { type: Number,default: 1},
     createDate: { type: Date,default: Date.now }
 })
