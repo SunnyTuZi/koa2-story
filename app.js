@@ -1,9 +1,14 @@
-// const Koa = require('koa')
+/**
+ * Create by Zwl on 2019/4/9
+ * @Description: 入口文件
+ */
+
+'use strict';
+
 import Koa from 'koa';
 import views from 'koa-views'
 import json from 'koa-json'
 import onerror from 'koa-onerror'
-// import bodyparser from 'koa-bodyparser'
 import koaBody from 'koa-body'
 import logger from 'koa-logger'
 import './mongodb/db'
@@ -38,7 +43,6 @@ app.use(async (ctx, next) => {
     const start = new Date()
     await next()
     const ms = new Date() - start
-    console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
 
 // routes

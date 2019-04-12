@@ -1,3 +1,10 @@
+/**
+ * Create by Zwl on 2019/4/9
+ * @Description: 用户模型
+ */
+
+'use strict';
+
 import  mongoose from 'mongoose'
 
 const Schema = mongoose.Schema

@@ -1,10 +1,14 @@
+/**
+ * Create by Zwl on 2019/4/9
+ * @Description: 数据库连接
+ */
 
 'use strict';
 
 import mongoose from 'mongoose';
 import config from '../config/config';
 import chalk from 'chalk';
-console.log(config.dbUrl)
+
 mongoose.connect(config.dbUrl, { useNewUrlParser : true});
 mongoose.Promise = global.Promise;
 
@@ -30,4 +34,3 @@ db.on('close', function() {
     mongoose.connect(config.url, {server:{auto_reconnect:true}});
 });
 
-export default db;

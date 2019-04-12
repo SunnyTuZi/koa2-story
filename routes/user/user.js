@@ -1,3 +1,10 @@
+/**
+ * Create by Zwl on 2019/4/9
+ * @Description: 用户操作路由
+ */
+
+'use strict';
+
 import Router from 'koa-router'
 import User from '../../controller/user/userController'
 const router = new Router({

@@ -1,6 +1,13 @@
+/**
+ * Create by Zwl on 2019/4/9
+ * @Description: 用户操作控制器
+ */
+
+'use strict';
+
 import UserModel from '../../model/user/userModel'
 import crypto from 'crypto'
-import {createToken, decodeToken} from "../../middlewares/token"
+import { createToken, decodeToken } from "../../middlewares/token"
 import fs from 'fs'
 import path from 'path'
 import mkdirs from '../../until/mkdir'
@@ -13,6 +20,12 @@ class User {
         this.uploadHead = this.uploadHead.bind(this);
     }
 
+    /**
+     * 用户注册
+     * @param ctx
+     * @param next
+     * @returns {Promise<void>}
+     */
     async register(ctx, next) {
         const { account, psw } = ctx.request.body;
         const newPsw = this.encryption(psw);
@@ -45,6 +58,12 @@ class User {
         }
     }
 
+    /**
+     * 用户登录
+     * @param ctx
+     * @param next
+     * @returns {Promise<void>}
+     */
     async login(ctx, next){
         let { account, psw } = ctx.request.body;
         psw = this.encryption(psw);
@@ -77,34 +96,62 @@ class User {
 
     }
 
+    /**
+     * 头像上传
+     * @param ctx
+     * @param next
+     * @returns {Promise<void>}
+     */
     async uploadHead(ctx,next){
          const file = ctx.request.files.file; // 获取上传文件
          const reader = fs.createReadStream(file.path);
          let filePath = path.join(process.cwd(), '/public/upload/head/');
-         await mkdirs(filePath,async ()=>{
+         const promise = new Promise((resolve, reject) =>{
+             mkdirs(filePath,async ()=>{
+                 // 创建可写流
+                 const upStream = fs.createWriteStream(filePath+`${file.name}`);
+                 // 可读流通过管道写入可写流
+                 reader.pipe(upStream);
+                 let id = ctx.request.body.id;
+                 let new_file_path = '/public/upload/head/'+ `${file.name}`
+                 await UserModel.findOneAndUpdate({_id: id},{head: new_file_path},{multi: true},(err)=>{
+                     if(err){
+                         reject()
+                     }else{
+                         resolve(next());
+                     }
+                 })
+
+             });
+         });
+         await promise.then(()=>{
              ctx.body = {
                  status: 200,
-                 msg: '上传成功'
+                 msg: '更新成功'
              }
-            // 创建可写流
-            const upStream = fs.createWriteStream(filePath+`${file.name}`);
-            // 可读流通过管道写入可写流
-            reader.pipe(upStream);
-            let id = ctx.request.body.id;
-            let new_file_path = '/public/upload/head/'+ `${file.name}`
-            await UserModel.findOneAndUpdate({_id: id},{head: new_file_path});
-            ctx.body = {
-                status: '200'
-            }
-         });
-
+         }).catch(()=>{
+             ctx.body = {
+                 status: 500,
+                 msg: '更新失败'
+             }
+         })
     }
 
+    /**
+     * 加密
+     * @param password
+     * @returns { 加密后字符串 }
+     */
     encryption(password) {
         const newpassword = this.Md5(this.Md5(password).substr(2, 7) + this.Md5(password));
         return newpassword
     }
 
+    /**
+     * 加密方式
+     * @param password
+     * @returns {string}
+     */
     Md5(password) {
         const md5 = crypto.createHash('md5');
         return md5.update(password).digest('base64');
