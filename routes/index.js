@@ -6,7 +6,7 @@
 'use strict';
 
 import user from  './user/user'
-
+import Router from "koa-router";
 export default app => {
     app.use(user.routes(), user.allowedMethods());
 }
