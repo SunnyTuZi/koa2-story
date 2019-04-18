@@ -13,7 +13,7 @@ const router = new Router({
 
 router.post('/register', User.register);
 router.post('/login', User.login);
-router.post('/uploadHead', User.uploadHead);
+router.post('/uploadAvatar', User.uploadAvatar);
 router.get('/getCode',User.getCode);
 
 export default router

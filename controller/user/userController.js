@@ -18,7 +18,7 @@ class User {
         this.encryption = this.encryption.bind(this);
         this.register = this.register.bind(this);
         this.login = this.login.bind(this);
-        this.uploadHead = this.uploadHead.bind(this);
+        this.uploadAvatar = this.uploadAvatar.bind(this);
     }
 
     /**
@@ -66,10 +66,16 @@ class User {
      * @returns {Promise<void>}
      */
     async login(ctx, next){
-        let { account, psw } = ctx.request.body;
+        let { account, psw, code } = ctx.request.body;
         psw = this.encryption(psw);
         let cap = ctx.cookies.get('captcha');
-        console.log(cap)
+        if(cap != code){
+            ctx.body = {
+                status: 500,
+                msg: '验证码不正确',
+            }
+            return;
+        }
         const user = await UserModel.findOne({ account, psw });
         if(user){
             await UserModel.findOne({account}).then((result) =>{
@@ -105,8 +111,9 @@ class User {
      * @param next
      * @returns {Promise<void>}
      */
-    async uploadHead(ctx,next){
+    async uploadAvatar(ctx,next){
          const file = ctx.request.files.file; // 获取上传文件
+         console.log(file)
          const reader = fs.createReadStream(file.path);
          let filePath = path.join(process.cwd(), '/public/upload/head/');
          const promise = new Promise((resolve, reject) =>{
@@ -116,7 +123,7 @@ class User {
                  // 可读流通过管道写入可写流
                  reader.pipe(upStream);
                  let id = ctx.request.body.id;
-                 let new_file_path = '/public/upload/head/'+ `${file.name}`
+                 let new_file_path = '/upload/head/'+ `${file.name}`
                  await UserModel.findOneAndUpdate({_id: id},{head: new_file_path},{multi: true},(err)=>{
                      if(err){
                          reject()
