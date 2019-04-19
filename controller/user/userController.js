@@ -79,7 +79,8 @@ class User {
         const user = await UserModel.findOne({ account, psw });
         if(user){
             await UserModel.findOne({account}).then((result) =>{
-                let token = createToken(result.id);
+                let token = createToken({account: result.account, id: result._id});
+                console.log(token)
                 ctx.body = {
                     status: 200,
                     msg: '登陆成功',
@@ -113,9 +114,8 @@ class User {
      */
     async uploadAvatar(ctx,next){
          const file = ctx.request.files.file; // 获取上传文件
-         console.log(file)
          const reader = fs.createReadStream(file.path);
-         let filePath = path.join(process.cwd(), '/public/upload/head/');
+         let filePath = path.join(process.cwd(), '/public/images/head/');
          const promise = new Promise((resolve, reject) =>{
              mkdirs(filePath,async ()=>{
                  // 创建可写流
@@ -123,7 +123,7 @@ class User {
                  // 可读流通过管道写入可写流
                  reader.pipe(upStream);
                  let id = ctx.request.body.id;
-                 let new_file_path = '/upload/head/'+ `${file.name}`
+                 let new_file_path = '/head/'+ `${file.name}`
                  await UserModel.findOneAndUpdate({_id: id},{head: new_file_path},{multi: true},(err)=>{
                      if(err){
                          reject()

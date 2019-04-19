@@ -10,7 +10,7 @@ const config = {
     'dbUrl': 'mongodb://localhost:27017/runoob',
     //token配置
     'token':{
-        'serect': 'story-key',
+        'serect': 'storyKey',
         'time': '10s'
     }
 }

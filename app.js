@@ -13,6 +13,10 @@ import koaBody from 'koa-body'
 import logger from 'koa-logger'
 import './mongodb/db'
 import router from './routes/index'
+import koajwt from 'koa-jwt'
+import config from './config/config'
+import verifyToken from './middlewares/checkToken'
+
 
 const app = new Koa();
 
@@ -38,12 +42,31 @@ app.use(views(__dirname + '/views', {
     extension: 'ejs'
 }))
 
+
 // logger
 app.use(async (ctx, next) => {
-    const start = new Date()
-    await next()
-    const ms = new Date() - start
+    return next().catch((err) => {
+        if(err.status === 401){
+            ctx.status = 401;
+            ctx.body = {
+                msg: 'token认证失败，请重新登陆'
+            }
+        }else{
+            throw err;
+        }
+    })
 })
+
+
+app.use(koajwt({
+    secret: config.token.serect
+}).unless({
+    path: [
+        /^\/api\/user\/login/,
+        /^\/api\/user\/getCode/
+    ]
+}));
+app.use(verifyToken);
 
 // routes
 router(app);

@@ -13,10 +13,8 @@ import config from '../config/config'
  * @param id
  * @returns {*}
  */
-const createToken = (id) =>{
-    return  jwt.sign({
-        id: id
-    }, config.token.serect, { expiresIn: config.token.time});
+const createToken = (data) =>{
+    return  jwt.sign(data, config.token.serect, { expiresIn: config.token.time});
 }
 
 /**
@@ -25,8 +23,11 @@ const createToken = (id) =>{
  * @returns {*}
  */
 const decodeToken = (token) =>{
-    return jwt.decode(token, config.token.serect);
-
+    return new Promise((resolve, reject) => {
+        jwt.verify(token,config.token.serect, (error, decoded) => {
+            error ? reject(error) : resolve(decoded);
+        });
+    });
 }
 export {
     createToken,
