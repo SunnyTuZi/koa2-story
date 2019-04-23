@@ -6,8 +6,10 @@
 'use strict';
 
 import user from  './user/user'
+import publicApi from  './public/index'
 
 export default app => {
     app.use(user.routes(), user.allowedMethods());
+    app.use(publicApi.routes(), publicApi.allowedMethods());
 }
 

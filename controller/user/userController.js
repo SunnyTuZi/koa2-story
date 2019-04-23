@@ -67,6 +67,13 @@ class User {
      */
     async login(ctx, next){
         let { account, psw, code } = ctx.request.body;
+        if(account == '' || psw ==  ''){
+            ctx.body = {
+                status: 500,
+                msg: '账号或密码不能为空',
+            }
+            return;
+        }
         psw = this.encryption(psw);
         let cap = ctx.cookies.get('captcha');
         if(cap != code){
@@ -80,7 +87,6 @@ class User {
         if(user){
             await UserModel.findOne({account}).then((result) =>{
                 let token = createToken({account: result.account, id: result._id});
-                console.log(token)
                 ctx.body = {
                     status: 200,
                     msg: '登陆成功',
@@ -92,10 +98,22 @@ class User {
         }else{
             const is_account = await UserModel.findOne({account});
             if(!is_account){
-                ctx.body = {
-                    status: 500,
-                    msg: '账号不存在'
+                const newPsw = this.encryption(psw);
+                const newUser = {
+                    account: account,
+                    psw: newPsw
                 }
+                await UserModel.create(newUser).then(
+                    (result) =>{
+                        let token = createToken({account: result.account, id: result._id});
+                        ctx.body = {
+                            status: 200,
+                            msg: '登陆成功',
+                            data: result,
+                            token: token
+                        }
+                    }
+                );
             }else{
                 ctx.body = {
                     status: 500,
@@ -126,27 +144,55 @@ class User {
                  let new_file_path = '/head/'+ `${file.name}`
                  await UserModel.findOneAndUpdate({_id: id},{head: new_file_path},{multi: true},(err)=>{
                      if(err){
-                         reject()
+                         ctx.body = {
+                             status: 500,
+                             msg: '更新失败'
+                         };
+                         reject();
                      }else{
+                         ctx.body = {
+                             status: 200,
+                             msg: '更新成功',
+                             url: new_file_path
+                         }
                          resolve(next());
                      }
                  })
 
              });
          });
-         await promise.then(()=>{
-             ctx.body = {
-                 status: 200,
-                 msg: '更新成功'
-             }
-         }).catch(()=>{
-             ctx.body = {
-                 status: 500,
-                 msg: '更新失败'
-             }
-         })
+        await promise;
     }
 
+    async editInfo(ctx){
+        let {_id, username, sex, age, address, autograph, email}  = ctx.request.body;
+        try{
+              await UserModel.findOneAndUpdate({_id:_id},{username,sex,age,address,autograph,email},{multi: true},(err,result)=>{
+                  if(err){
+                      ctx.body = {
+                          statue: 500,
+                          msg: '更新失败'
+                      }
+                  }else{
+                      ctx.body = {
+                          status: 200,
+                          msg: '更新成功',
+                          data: result
+                      }
+                  }
+              })
+        }catch (err) {
+            ctx.body = {
+                status: 500,
+                message: '未知错误',
+            }
+        }
+    }
+    /**
+     * 获取验证码
+     * @param ctx
+     * @returns {Promise<void>}
+     */
     async getCode(ctx){
         const cap = parseInt(Math.random() * 9000 + 1000);
         const p = new captchapng(80, 30, cap);
@@ -156,7 +202,16 @@ class User {
         ctx.cookies.set('captcha', cap, {maxAge: 360000, httpOnly: true});
         ctx.status = 200
         ctx.body = {
+            status: 200,
             code: 'data:image/png;base64,' + base64
+        }
+    }
+
+    async checkToken(ctx){
+        let { token } = ctx.body;
+        const result = decodeToken(token);
+        if(result){
+
         }
     }
 

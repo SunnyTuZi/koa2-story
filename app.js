@@ -63,10 +63,11 @@ app.use(koajwt({
 }).unless({
     path: [
         /^\/api\/user\/login/,
-        /^\/api\/user\/getCode/
+        /^\/api\/user\/getCode/,
+        /^\/api\/public/
     ]
 }));
-app.use(verifyToken);
+// app.use(verifyToken);
 
 // routes
 router(app);

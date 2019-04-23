@@ -16,5 +16,6 @@ router.post('/register', User.register);
 router.post('/login', User.login);
 router.post('/uploadAvatar', User.uploadAvatar);
 router.get('/getCode',User.getCode);
+router.post('/edit',User.editInfo);
 
 export default router
