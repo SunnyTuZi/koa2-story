@@ -29,7 +29,9 @@ const userSchema = new Schema({
     username: String,
     email: String,
     psw: String,
+    address: String,
     autograph: String,
+    dateOfBirth: String,
     head: String,
     status: { type: Number,default: 1},
     createDate: { type: Date,default: Date.now }

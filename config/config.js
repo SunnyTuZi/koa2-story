@@ -11,7 +11,7 @@ const config = {
     //token配置
     'token':{
         'serect': 'storyKey',
-        'time': '1h'
+        'time': '24h'
     }
 }
 export default config

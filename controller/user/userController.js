@@ -165,9 +165,9 @@ class User {
     }
 
     async editInfo(ctx){
-        let {_id, username, sex, age, address, autograph, email}  = ctx.request.body;
+        let {_id, username, sex, dateOfBirth, address, autograph, email}  = ctx.request.body;
         try{
-              await UserModel.findOneAndUpdate({_id:_id},{username,sex,age,address,autograph,email},{multi: true},(err,result)=>{
+              await UserModel.findOneAndUpdate({_id:_id},{username,sex,dateOfBirth,address,autograph,email},{new: true},(err,result)=>{
                   if(err){
                       ctx.body = {
                           statue: 500,
