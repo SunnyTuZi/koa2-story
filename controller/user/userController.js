@@ -34,7 +34,7 @@ class User {
             const user = await UserModel.findOne({account});
             if (user) {
                 ctx.body = {
-                    status: 500,
+                    code: 0,
                     type: 'USER_HAS_EXIST',
                     message: '该用户已经存在',
                 }
@@ -45,14 +45,14 @@ class User {
                 }
                 await UserModel.create(newUser);
                 ctx.body = {
-                    status: 200,
+                    code: 1,
                     message: '注册管理员成功',
                 }
 
             }
         } catch (err) {
             ctx.body = {
-                status: 500,
+                code: 0,
                 type: 'REGISTER_ADMIN_FAILED',
                 message: '注册管理员失败',
             }
@@ -69,7 +69,7 @@ class User {
         let { account, psw, code } = ctx.request.body;
         if(account == '' || psw ==  ''){
             ctx.body = {
-                status: 500,
+                code: 0,
                 msg: '账号或密码不能为空',
             }
             return;
@@ -78,7 +78,7 @@ class User {
         let cap = ctx.cookies.get('captcha');
         if(cap != code){
             ctx.body = {
-                status: 500,
+                code: 0,
                 msg: '验证码不正确',
             }
             return;
@@ -88,7 +88,7 @@ class User {
             await UserModel.findOne({account}).then((result) =>{
                 let token = createToken({account: result.account, id: result._id});
                 ctx.body = {
-                    status: 200,
+                    code: 1,
                     msg: '登陆成功',
                     data: result,
                     token: token
@@ -107,7 +107,7 @@ class User {
                     (result) =>{
                         let token = createToken({account: result.account, id: result._id});
                         ctx.body = {
-                            status: 200,
+                            code: 1,
                             msg: '登陆成功',
                             data: result,
                             token: token
@@ -116,7 +116,7 @@ class User {
                 );
             }else{
                 ctx.body = {
-                    status: 500,
+                    code: 0,
                     msg: '密码错误'
                 }
             }
@@ -145,13 +145,13 @@ class User {
                  await UserModel.findOneAndUpdate({_id: id},{head: new_file_path},{multi: true},(err)=>{
                      if(err){
                          ctx.body = {
-                             status: 500,
+                             code: 0,
                              msg: '更新失败'
                          };
                          reject();
                      }else{
                          ctx.body = {
-                             status: 200,
+                             code: 1,
                              msg: '更新成功',
                              url: new_file_path
                          }
@@ -170,12 +170,12 @@ class User {
               await UserModel.findOneAndUpdate({_id:_id},{username,sex,dateOfBirth,address,autograph,email},{new: true},(err,result)=>{
                   if(err){
                       ctx.body = {
-                          statue: 500,
+                          code: 0,
                           msg: '更新失败'
                       }
                   }else{
                       ctx.body = {
-                          status: 200,
+                          code: 1,
                           msg: '更新成功',
                           data: result
                       }
@@ -183,8 +183,8 @@ class User {
               })
         }catch (err) {
             ctx.body = {
-                status: 500,
-                message: '未知错误',
+                code: 0,
+                msg: '未知错误',
             }
         }
     }
@@ -202,8 +202,8 @@ class User {
         ctx.cookies.set('captcha', cap, {maxAge: 360000, httpOnly: true});
         ctx.status = 200
         ctx.body = {
-            status: 200,
-            code: 'data:image/png;base64,' + base64
+            code: 1,
+            codeImg: 'data:image/png;base64,' + base64
         }
     }
 

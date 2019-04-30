@@ -12,8 +12,9 @@ const router = new Router({
     prefix:'/api/story'
 });
 
-router.post('/addStory', Story.addStory);
+router.post('/add', Story.addStory);
 router.get('/getList', Story.getList);
+router.post('/support', Story.supportStory);
 
 
 export default router

@@ -64,7 +64,8 @@ app.use(koajwt({
     path: [
         /^\/api\/user\/login/,
         /^\/api\/user\/getCode/,
-        /^\/api\/public/
+        /^\/api\/public/,
+        /^\/api\/story\/getList/
     ]
 }));
 // app.use(verifyToken);

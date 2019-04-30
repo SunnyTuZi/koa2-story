@@ -6,6 +6,7 @@
 'use strict';
 
 import StoryModel from '../../model/story/storyModel';
+import SupportModel from '../../model/story/supportModel';
 
 class Story {
     constructor(){
@@ -23,7 +24,7 @@ class Story {
             await StoryModel.create(newStory).then(
                 (result) =>{
                     ctx.body = {
-                        status: 1,
+                        code: 1,
                         msg: '发表成功',
                         data: result
                     }
@@ -31,7 +32,7 @@ class Story {
             );
         }catch (e) {
             ctx.body = {
-                status: 0,
+                code: 0,
                 msg: '服务器错误，发表失败',
                 data: e
             }
@@ -41,15 +42,36 @@ class Story {
     async getList(ctx){
         const promise = new Promise(
             async (resolve,reject) =>{
-                await StoryModel.findUserInfo(
+                await StoryModel.getStoryList(
                     (result) => {
                         ctx.body = {
-                            status: '1',
+                            code: 1,
                             data: result
                         }
                         resolve();
                     }
                 )
+            }
+        )
+        await promise;
+    }
+
+    async supportStory(ctx){
+        let {storyId, userId, status}  = ctx.request.body;
+        const promise = new Promise(
+            async (resolve,reject) =>{
+                const supportForm = {
+                    storyId,
+                    userId,
+                    status
+                }
+                await SupportModel.support(supportForm,(result) => {
+                    ctx.body = {
+                        code: 1,
+                        data: result
+                    }
+                    resolve();
+                });
             }
         )
         await promise;
