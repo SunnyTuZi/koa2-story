@@ -9,7 +9,6 @@
 'use strict';
 
 import mongoose from 'mongoose'
-import Support from '../story/supportModel'
 
 const Schema = mongoose.Schema
 
@@ -41,81 +40,130 @@ const storySchema = new Schema({
 });
 
 storySchema.statics = {
-    getStoryList: function (callback) {
-    //     return this.aggregate([
-    //         {
-    //             $lookup:{
-    //                 from: 'users',
-    //                 localField: 'userId',
-    //                 foreignField: '_id',
-    //                 as: 'user'
-    //             }
-    //         },
-    //         {
-    //             $lookup:{
-    //                 from: 'supports',
-    //                 localField: '_id',
-    //                 foreignField: 'storyId',
-    //                 as: 'support'
-    //             }
-    //         },
-    //         {
-    //             $count: '$support'
-    //         }
-    //         // {
-    //         //     $group:{
-    //         //         _id:{
-    //         //             support:{
-    //         //                 status:"$support.status",
-    //         //                 count:{$sum:1}
-    //         //             }
-    //         //         }
-    //         //
-    //         //     }
-    //         // }
-    //     ]).exec(
-    //         (err, docs) =>{
-    //             callback(docs);
-    //         }
-    //     )
-        return this.find().populate('userId').limit(10).exec(
-                async (err, result) => {
-                    if (err) throw err;
-                    for(let i=0;i<result.length;i++){
-                        var promise = new Promise(
-                            async (resolve)=>{
-                                await Support.count(result[i]._id,function (res) {
-                                    for(let o of res){
-                                        if(o._id.status == 2){
-                                            result[i].badsNum = o.count;
-                                        }else if(o._id.status == 1){
-                                            result[i].goods = o.count;
-                                        }
-                                    }
-                                    resolve();
-                                });
-                            }
-                        );
-                        await promise;
-                    }
-                    callback(result);
-
+    getStoryList: function (uid,callback) {
+        return this.aggregate([
+            {
+                $lookup:{
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
                 }
-            )
+            },
+            {
+                $lookup:{
+                    from: 'supports',
+                    localField: '_id',
+                    foreignField: 'storyId',
+                    as: 'support'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'supports',
+                    localField: '_id',
+                    foreignField: 'storyId',
+                    as: 'support'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'likes',
+                    localField: '_id',
+                    foreignField: 'storyId',
+                    as: 'like'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'storyId',
+                    as: 'comment'
+                }
+            },
+            { $unwind:"$user" },
+            {
+                $project:{
+                    goods:{
+                        $filter:{
+                            input:'$support',
+                            as: 'good',
+                            cond:{$eq:['$$good.status', 1]}
+                        }
 
-    },
-    goodsAdd: function (storyId,goodsNum,badsNum,callback) {
-        return this.find({_id:storyId},
-            (err,docs) => {
+                    },
+                    bads:{
+                        $filter:{
+                            input:'$support',
+                            as: 'bad',
+                            cond:{$eq:['$$bad.status', 2]}
+                        }
+
+                    },
+                    likeByUser:{
+                        $filter:{
+                            input:'$like',
+                            as: 'li',
+                            cond:{$eq:['$$li.userId', mongoose.Types.ObjectId(uid)]}
+                        }
+                    },
+                    supportByUser:{
+                        $filter:{
+                            input:'$support',
+                            as: 'sup',
+                            cond:{$eq:['$$sup.userId',mongoose.Types.ObjectId(uid)]}
+                        }
+                    },
+                    userId:'$user',
+                    storyName: '$storyName',
+                    storyContent: '$storyContent',
+                    createDate: '$createDate',
+                    comment:1
+                }
+            },
+            {
+                $addFields:{
+                    bad:{ $size:'$bads.status'},
+                    good:{ $size: '$goods.status'},
+                    coms:{ $size:'$comment' }
+                }
+            },
+            {
+                $project: {
+                    'userId._id':1,
+                    'userId.uaername':1,
+                    'userId.head':1,
+                    'userId.autograph':1,
+                    'userId.sex':1,
+                    storyName: 1,
+                    storyContent: 1,
+                    createDate: 1,
+                    bads:'$bad',
+                    goods:'$good',
+                    'supportByUser.status':1,
+                    'likeByUser.status':1,
+                    coms:1
+                }
+            }
+
+        ]).exec(
+            (err, docs) =>{
                 if(err) throw err;
-                docs.goodsNum += goodsNum;
-                docs.badsNum += badsNum;
-                docs.save(
-                    (err, result) =>{
-                        if(err) throw err;
-                        callback(result);
+                //处理数据
+                for(let item of docs){
+                    if(item.supportByUser.length == 0){
+                        item.supportByUser = 0;
+                    }else{
+                        item.supportByUser = item.supportByUser[0].status;
                     }
-                )
+                    if(item.likeByUser.length == 0){
+                        item.likeByUser = 0;
+                    }else{
+                        item.likeByUser = item.likeByUser[0].status;
+                    }
+                }
+                callback(docs);
             }
         )
     }

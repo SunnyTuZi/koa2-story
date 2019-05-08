@@ -13,8 +13,12 @@ const router = new Router({
 });
 
 router.post('/add', Story.addStory);
-router.get('/getList', Story.getList);
+router.post('/getList', Story.getList);
 router.post('/support', Story.supportStory);
+router.post('/like', Story.likeStory);
+router.post('/commentAdd', Story.commentAdd);
+router.post('/getComentList', Story.getComentList);
+router.post('/getCommentTotalByStory',Story.getCommentTotalByStory);
 
 
 export default router

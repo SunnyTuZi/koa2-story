@@ -24,6 +24,9 @@ const supportSchema = new Schema({
         default: 0,
         type: Number
     },
+    updateDate:{
+      type: Date
+    },
     createDate: {type: Date, default: Date.now}
 });
 
@@ -71,6 +74,15 @@ supportSchema.statics = {
                 callback(docs);
             }
         )
+    },
+    statusByUser: function (userId,storyId,callback) {
+        return this.findOne({userId,storyId}).exec(
+            (err, docs)=>{
+                if(err) throw err;
+                callback(docs.status);
+            }
+        )
+
     }
 };
 
