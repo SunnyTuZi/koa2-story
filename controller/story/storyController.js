@@ -18,6 +18,12 @@ class Story {
         this.supportStory.bind(this);
         this.commentAdd.bind(this);
     }
+
+    /**
+     * 发表故事
+     * @param ctx
+     * @returns {Promise<void>}
+     */
     async addStory(ctx){
         let {userId, storyName, storyContent, themeId} = ctx.request.body;
         const newStory = {
@@ -26,36 +32,50 @@ class Story {
             storyContent,
             themeId
         }
-        try {
-            await StoryModel.create(newStory).then(
-                (result) =>{
+        await StoryModel.addStory(newStory,
+            (err,docs) =>{
+                if(err){
                     ctx.body = {
                         code: 1,
-                        msg: '发表成功',
-                        data: result
+                        msg: '服务器错误，发表失败~',
+                        data: docs
+                    }
+                }else{
+                    ctx.body = {
+                        code: 1,
+                        msg: '发表成功~',
+                        data: docs
                     }
                 }
-            );
-        }catch (e) {
-            ctx.body = {
-                code: 0,
-                msg: '服务器错误，发表失败',
-                data: e
             }
-        }
+        );
     }
 
-    async getList(ctx){
-        let userId = ctx.request.body.userId;
+    /**
+     * 获取故事列表
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async getList(ctx,next){
+        let userId = ctx.query.userId;
         const promise = new Promise(
             async (resolve,reject) =>{
                 await StoryModel.getStoryList(userId,
-                    (result) => {
-                        ctx.body = {
-                            code: 1,
-                            data: result
+                    (err,result) => {
+                        if (err) {
+                            ctx.body = {
+                                code: 0,
+                                msg: '服务器错误，获取列表失败~',
+                                data: result
+                            }
+                            reject();
+                        } else {
+                            ctx.body = {
+                                code: 1,
+                                data: result
+                            }
+                            resolve(next());
                         }
-                        resolve();
                     }
                 )
             }
@@ -63,28 +83,50 @@ class Story {
         await promise;
     }
 
+    /**
+     * 根据storyId点赞或踩故事，并记录userId
+     * @param ctx
+     * @returns {Promise<void>}
+     */
     async supportStory(ctx){
         let {storyId, userId, status}  = ctx.request.body;
+        let updateDate = Date.now();
         const promise = new Promise(
             async (resolve,reject) =>{
                 const supportForm = {
                     storyId,
                     userId,
-                    status
+                    status,
+                    updateDate
                 }
-                await SupportModel.support(supportForm,(result) => {
-                    ctx.body = {
-                        code: 1,
-                        data: result
+                await SupportModel.support(supportForm,
+                    (err,docs) => {
+                        if(err){
+                            ctx.body = {
+                                code: 0,
+                                msg: '服务器错误，操作失败~'
+                            }
+                            reject();
+                        }else{
+                            ctx.body = {
+                                code: 1,
+                                data: docs
+                            }
+                            resolve();
+                        }
                     }
-                    resolve();
-                });
+                );
             }
         )
         await promise;
     }
 
-    async likeStory(ctx){
+    /**
+     * 根据storyId收藏故事，并记录userId
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async likeStory(ctx,next){
         let {storyId, userId, status}  = ctx.request.body;
         const promise = new Promise(
             async (resolve,reject) =>{
@@ -93,18 +135,31 @@ class Story {
                     userId,
                     status
                 }
-                await LikeModel.likeSave(likeForm,(result) => {
-                    ctx.body = {
-                        code: 1,
-                        data: result
+                await LikeModel.likeSave(likeForm,(err,result) => {
+                    if(err){
+                        ctx.body = {
+                            code: 0,
+                            msg: '服务器错误，收藏失败~'
+                        }
+                        reject();
+                    }else{
+                        ctx.body = {
+                            code: 1,
+                            data: result
+                        }
+                        resolve(next());
                     }
-                    resolve();
                 });
             }
         )
         await promise;
     }
 
+    /**
+     * 根据storyId添加评论，并记录userId
+     * @param ctx
+     * @returns {Promise<void>}
+     */
     async commentAdd(ctx){
         let {storyId, userId, commentText}  = ctx.request.body;
         const commentForm = {
@@ -133,13 +188,19 @@ class Story {
         await promise;
     }
 
+    /**
+     * 根据storyId获取评论，并根据页码和分页数筛选数据
+     * @param ctx
+     * @returns {Promise<void>}
+     */
     async getComentList(ctx){
-        let {storyId,page_no,page_size} = ctx.request.body;
+        let {storyId,page_no,page_size} = ctx.query;
         const conition = {
-            storyId,
-            page_no,
-            page_size
+            storyId:storyId,
+            page_no:Number(page_no)||1,
+            page_size:Number(page_size)||1
         }
+
         const promise = new Promise( async (resolve,reject) =>{
             await CommentModel.getList(conition,(err, docs)=>{
                 if(err){
@@ -160,8 +221,13 @@ class Story {
         await promise;
     }
 
+    /**
+     * 根据storyId获取评论数
+     * @param ctx
+     * @returns {Promise<void>}
+     */
     async getCommentTotalByStory(ctx){
-        let {storyId} = ctx.request.body;
+        let {storyId} = ctx.query;
         const conition = {
             storyId
         }

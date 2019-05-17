@@ -15,10 +15,24 @@ import './mongodb/db'
 import router from './routes/index'
 import koajwt from 'koa-jwt'
 import config from './config/config'
+import socket from  'socket.io';
+import http from 'http';
 import verifyToken from './middlewares/checkToken'
 
 
 const app = new Koa();
+const server = http.createServer(app.callback());
+const io = socket(server);
+
+//监听socket连接
+io.on('connection', socket => {
+    socket.emit('news', [{name:'zwl',msg:'who your name'}]);
+    socket.on('my other event', function (data) {
+        console.log(data+'111')
+    });
+});
+
+app._server = server;
 
 // error handler
 onerror(app)
@@ -65,7 +79,8 @@ app.use(koajwt({
         /^\/api\/user\/login/,
         /^\/api\/user\/getCode/,
         /^\/api\/public/,
-        /^\/api\/story\/getList/
+        /^\/api\/story\/getList/,
+        /^\/socket.io/
     ]
 }));
 // app.use(verifyToken);

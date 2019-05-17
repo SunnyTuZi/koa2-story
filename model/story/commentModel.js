@@ -19,6 +19,10 @@ const commentSchema = new Schema({
         ref: 'Story'
     },
     commentText: String,
+    status:{
+      type: Number,
+      default: 1
+    },
     createDate: {type: Date, default: Date.now}
 });
 

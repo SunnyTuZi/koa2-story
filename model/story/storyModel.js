@@ -12,6 +12,15 @@ import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
+/**
+ * @param userId 发表用户Id
+ * @param storyName 故事名称
+ * @param storyContent 故事内容
+ * @param themeId 分类ID
+ * @param status 故事的状态 1:在线/0:违规/2:软删除
+ * @param createDate 发表时间
+ */
+
 const storySchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
@@ -19,29 +28,35 @@ const storySchema = new Schema({
     },
     storyName: String,
     storyContent: String,
-    goodsNum:{
-      default: 0,
-      type: Number
-    },
-    badsNum:{
-        default: 0,
-        type: Number
-    },
-    likeNum:{
-        default: 0,
-        type: Number
-    },
     themeId: String,
-    commentNum:{
-        default: 0,
-        type: Number
+    status:{
+      default: 1,
+      type: Number
     },
     createDate: {type: Date, default: Date.now}
 });
 
 storySchema.statics = {
+    /**
+     * 添加故事
+     * @param form 表单数据
+     * @param callback
+     * @returns {form}
+     */
+    addStory: function(form,callback){
+        return this.create(form,(err,docs)=>{
+            callback(err,docs);
+        });
+    },
+    /**
+     * 获取故事列表
+     * @param uid 用户ID，用来判断点赞收藏状态
+     * @param callback
+     * @returns {Promise}
+     */
     getStoryList: function (uid,callback) {
         return this.aggregate([
+            //lookup是连表查询
             {
                 $lookup:{
                     from: 'users',
@@ -82,7 +97,9 @@ storySchema.statics = {
                     as: 'comment'
                 }
             },
+            //拆分字符，将user数组变成对象
             { $unwind:"$user" },
+            //重新定义一些字段
             {
                 $project:{
                     goods:{
@@ -122,6 +139,7 @@ storySchema.statics = {
                     comment:1
                 }
             },
+            //添加新的字段
             {
                 $addFields:{
                     bad:{ $size:'$bads.status'},
@@ -129,6 +147,7 @@ storySchema.statics = {
                     coms:{ $size:'$comment' }
                 }
             },
+            //定义需要的字段
             {
                 $project: {
                     'userId._id':1,
@@ -150,7 +169,7 @@ storySchema.statics = {
         ]).exec(
             (err, docs) =>{
                 if(err) throw err;
-                //处理数据
+                //处理数据,将当前用户的点赞和收藏状态返回
                 for(let item of docs){
                     if(item.supportByUser.length == 0){
                         item.supportByUser = 0;
@@ -163,7 +182,7 @@ storySchema.statics = {
                         item.likeByUser = item.likeByUser[0].status;
                     }
                 }
-                callback(docs);
+                callback(err,docs);
             }
         )
     }

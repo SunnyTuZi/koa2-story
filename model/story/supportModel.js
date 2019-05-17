@@ -8,8 +8,15 @@
 
 import mongoose from 'mongoose'
 
-
 const Schema = mongoose.Schema;
+
+/**
+ * @param userId 点赞用户Id
+ * @param storyId 故事ID
+ * @param status 收藏状态 0:未点赞和踩/1:点赞/2:踩
+ * @param updateDate 更新时间
+ * @param createDate 创建
+ */
 
 const supportSchema = new Schema({
     storyId: {
@@ -31,6 +38,12 @@ const supportSchema = new Schema({
 });
 
 supportSchema.statics = {
+    /**
+     * 点赞
+     * @param obj 参数
+     * @param callback
+     * @returns {Query|void}
+     */
     support: function (obj, callback) {
         return this.findOne({storyId: obj.storyId, userId: obj.userId},
             (err, doc) => {
@@ -39,50 +52,18 @@ supportSchema.statics = {
                     doc.status = obj.status;
                     doc.save(
                         (err, result) => {
-                            if (err) throw err;
-                            callback(result);
+                            callback(err,result);
                         }
                     )
                 } else {
                     this.create(obj,
                         (err, result) => {
-                            if (err) throw err;
-                            callback(result);
+                            callback(err,result);
                         }
                     )
                 }
             }
         )
-    },
-    count: function (storyId, callback) {
-        return this.aggregate([
-            {
-                $match:{
-                    'storyId': storyId
-                }
-            },
-            {
-                $group: {
-                    _id: { status: '$status' },
-                    count: { $sum: 1}
-                }
-            }
-
-        ]).exec(
-            (err, docs) => {
-                if (err) throw err;
-                callback(docs);
-            }
-        )
-    },
-    statusByUser: function (userId,storyId,callback) {
-        return this.findOne({userId,storyId}).exec(
-            (err, docs)=>{
-                if(err) throw err;
-                callback(docs.status);
-            }
-        )
-
     }
 };
 
