@@ -22,10 +22,11 @@ import verifyToken from './middlewares/checkToken'
 
 const app = new Koa();
 const server = http.createServer(app.callback());
-const io = socket(server);
+app._io = socket(server);
 
 //监听socket连接
-io.on('connection', socket => {
+app._io.on('connection', socket => {
+    app.socket = socket;
     socket.emit('news', [{name:'zwl',msg:'who your name'}]);
     socket.on('my other event', function (data) {
         console.log(data+'111')
@@ -92,5 +93,4 @@ router(app);
 app.on('error', (err, ctx) => {
     console.error('server error', err, ctx)
 });
-
 module.exports = app

@@ -31,15 +31,28 @@ const BubbleGroupchema = new Schema({
 });
 
 BubbleGroupchema.statics = {
-    create:function (form,callback) {
+    createGroup:function (form,callback) {
         return this.create(form,
             (err,docs) =>{
                 callback(err,docs);
             }
         )
+    },
+    getList: function (callback) {
+        return this.aggregate([
+            {
+                $sort:{
+                    createDate: 1
+                }
+            }
+        ]).exec(
+            (err,docs)=>{
+                callback(err,docs)
+            }
+        )
     }
 }
 
-const BubbleGroup = mongoose.model('Like',BubbleGroupchema);
+const BubbleGroup = mongoose.model('BubbleGroup',BubbleGroupchema);
 
 export default BubbleGroup;
