@@ -22,16 +22,13 @@ import verifyToken from './middlewares/checkToken'
 
 const app = new Koa();
 const server = http.createServer(app.callback());
-app._io = socket(server);
+const io = socket(server);
 
 //监听socket连接
-app._io.on('connection', socket => {
-    app.socket = socket;
-    socket.emit('news', [{name:'zwl',msg:'who your name'}]);
-    socket.on('my other event', function (data) {
-        console.log(data+'111')
-    });
-});
+// let _socket;
+// io.on('connection', socket => {
+//     _socket = socket;
+// });
 
 app._server = server;
 
@@ -60,6 +57,7 @@ app.use(views(__dirname + '/views', {
 
 // logger
 app.use(async (ctx, next) => {
+    ctx.state.io = io;
     return next().catch((err) => {
         if(err.status === 401){
             ctx.status = 401;

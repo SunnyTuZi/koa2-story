@@ -7,8 +7,6 @@
 
 import BubbleGroup from '../../model/bubble/group';
 import GroupChat from '../../model/bubble/chatGroup';
-import App from "../../index"
-
 
 class Chat {
     constructor() {
@@ -54,13 +52,16 @@ class Chat {
                             code: 1,
                             data: docs
                         }
-                        // for(var i=0;i<docs.length;i++){
-                        //     let groupId = docs[i]._id;
-                        //     console.log(App)
-                        //     App.socket.on(groupId,(data)=>{
-                        //         App.socket.join(groupId)
-                        //     });
-                        // }
+                        for(var i=0;i<docs.length;i++){
+                            let groupId = docs[i]._id;
+                            let group = ctx.state.io.of('/'+groupId);
+                            group.on('connection', (socket) => {
+                                socket.on('sendMsg', (data) => {
+                                    data.id = socket.id;
+                                    group.emit('receiveMsg', data);
+                                })
+                            });
+                        }
                         resolve();
                     }
                 }
@@ -81,7 +82,8 @@ class Chat {
                     reject();
                 }else{
                     ctx.body = {
-                        code:1
+                        code:1,
+                        data: docs
                     }
                     resolve();
                 }

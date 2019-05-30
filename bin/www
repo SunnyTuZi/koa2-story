@@ -21,17 +21,6 @@ var port = normalizePort(process.env.PORT || '3000');
  * Create HTTP server.
  */
 
-// var server = http.createServer(app.callback());
-// var io = socket(server);
-//
-// // 监听socket连接
-// io.on('connection', socket => {
-//     socket.emit('news', { hello: 'zwl' });
-//     socket.on('my other event', function (data) {
-//         console.log(data);
-//     });
-// })
-
 /**
  * Listen on provided port, on all network interfaces.
  */
