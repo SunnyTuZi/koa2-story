@@ -12,6 +12,8 @@ const config = {
     'token':{
         'serect': 'storyKey',
         'time': '24h'
-    }
+    },
+    //分组存在时间小时为单位
+    'groupInHour': 1
 }
 export default config

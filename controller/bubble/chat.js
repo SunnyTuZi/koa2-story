@@ -7,6 +7,7 @@
 
 import BubbleGroup from '../../model/bubble/group';
 import GroupChat from '../../model/bubble/chatGroup';
+import config from '../../config/config';
 
 class Chat {
     constructor() {
@@ -29,6 +30,18 @@ class Chat {
                         ctx.body = {
                             code: 1
                         }
+                        //创建聊天分组
+                        let group = ctx.state.io.of('/' + docs._id);
+                        group.on('connection', (socket) => {
+                            socket.on('sendMsg', (data) => {
+                                data.id = socket.id;
+                                group.emit('receiveMsg', data);
+                            })
+                        });
+                        //创建后，延迟关闭
+                        setTimeout(()=>{
+                            group.disconnect();
+                        },config.groupInHour*60*60*1000);
                         resolve();
                     }
                 }
@@ -51,16 +64,6 @@ class Chat {
                         ctx.body = {
                             code: 1,
                             data: docs
-                        }
-                        for(var i=0;i<docs.length;i++){
-                            let groupId = docs[i]._id;
-                            let group = ctx.state.io.of('/'+groupId);
-                            group.on('connection', (socket) => {
-                                socket.on('sendMsg', (data) => {
-                                    data.id = socket.id;
-                                    group.emit('receiveMsg', data);
-                                })
-                            });
                         }
                         resolve();
                     }

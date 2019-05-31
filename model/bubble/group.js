@@ -6,6 +6,7 @@
 'use strict';
 
 import mongoose from 'mongoose';
+import  config from '../../config/config';
 
 const Schema = mongoose.Schema;
 
@@ -40,6 +41,13 @@ BubbleGroupchema.statics = {
     },
     getList: function (callback) {
         return this.aggregate([
+            {
+                $match:{
+                    createDate:{
+                        '$gt': new Date(new Date().valueOf() - config.groupInHour * 60 * 60 * 1000)
+                    }
+                }
+            },
             {
                 $sort:{
                     createDate: 1
