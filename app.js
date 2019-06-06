@@ -25,10 +25,16 @@ const server = http.createServer(app.callback());
 const io = socket(server);
 
 //监听socket连接
-// let _socket;
-// io.on('connection', socket => {
-//     _socket = socket;
-// });
+io.on('connection',(socket) =>{
+    socket.on('onHandlerGourp',()=>{
+        socket.join('onHandlerGourp');
+    });
+    socket.on('leaveRoom',(data)=>{
+        var room = data.room;
+        socket.leave(room,(data)=>{
+        });
+    });
+});
 
 app._server = server;
 

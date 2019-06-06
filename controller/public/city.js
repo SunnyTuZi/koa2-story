@@ -39,16 +39,15 @@ class City {
         await postJson(url).then(
             result =>{
                 ctx.body = {
-                    status: 200,
+                    code: 1,
                     data: result,
-                    msg: '请求成功'
                 }
                 next();
             }
         ).catch(
             err =>{
                 ctx.body = {
-                    status: 500,
+                    code: 0,
                     msg: '获取数据失败'
                 }
             }
@@ -60,16 +59,15 @@ class City {
         await postJson(url).then(
             result =>{
                 ctx.body = {
-                    status: 200,
+                    code: 1,
                     data: result,
-                    msg: '请求成功'
                 }
                 next();
             }
         ).catch(
             err =>{
                 ctx.body = {
-                    status: 500,
+                    code: 0,
                     msg: '获取数据失败'
                 }
             }

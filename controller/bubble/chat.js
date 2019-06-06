@@ -30,17 +30,32 @@ class Chat {
                         ctx.body = {
                             code: 1
                         }
+
                         //创建聊天分组
                         let group = ctx.state.io.of('/' + docs._id);
                         group.on('connection', (socket) => {
+                            //加入分组
+                            socket.on('join',(data) =>{
+                                data.id = socket.id;
+                                data.type = 2;
+                                group.emit('joinCall', data);
+                                ctx.state.io.to('onHandlerGourp').emit('changeGroupList',{groupId:docs._id,num:1});
+                            });
+                            //发送信息
                             socket.on('sendMsg', (data) => {
                                 data.id = socket.id;
+                                data.type = 1;
                                 group.emit('receiveMsg', data);
-                            })
+                            });
+                            //用户离开
+                            socket.on('leaveGroup', (data) => {
+                                group.emit('receiveMsg', {type:3,username:data.username});
+                                ctx.state.io.to('onHandlerGourp').emit('changeGroupList',{groupId:docs._id,num:-1});
+                            });
                         });
                         //创建后，延迟关闭
                         setTimeout(()=>{
-                            group.disconnect();
+                            group.disconnect?group.disconnect(true):'';
                         },config.groupInHour*60*60*1000);
                         resolve();
                     }
@@ -61,6 +76,13 @@ class Chat {
                         }
                         reject();
                     } else {
+                        for (let i = 0; i < docs.length; i ++) {
+                            var item = docs[i];
+                            ctx.state.io.of(item._id).clients((error, clients) => {
+                                if (error) throw error;
+                                item.size = clients.length;
+                            });
+                        }
                         ctx.body = {
                             code: 1,
                             data: docs
