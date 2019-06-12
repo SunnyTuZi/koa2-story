@@ -6,6 +6,7 @@
 'use strict';
 
 import UserModel from '../../model/user/userModel'
+import FollowModel from '../../model/user/follow'
 import crypto from 'crypto'
 import { createToken, decodeToken } from "../../middlewares/token"
 import fs from 'fs'
@@ -205,6 +206,61 @@ class User {
             code: 1,
             codeImg: 'data:image/png;base64,' + base64
         }
+    }
+
+    /**
+     * 获取用户信息
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async getUserInfo(ctx){
+        let {userId,followUserId} = ctx.query;
+        const promise = new Promise( async (resolve, reject) => {
+            await UserModel.getUserInfo({userId,followUserId}, (err, docs) => {
+                if (err) {
+                    ctx.body = {
+                        code: 0,
+                        msg: '服务器错误，获取用户数据失败~'
+                    };
+                    reject();
+                } else {
+                    ctx.body = {
+                        code: 1,
+                        data: docs[0]
+                    };
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
+    /**
+     * 关注用户
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async followUser(ctx){
+        let data  = ctx.request.body;
+        const promise = new Promise( async (resolve, reject) => {
+            await FollowModel.followUser(data,(err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code:0,
+                        msg:'服务器错误，关注失败~'
+                    };
+                    reject();
+                }else {
+                    let msg = docs.status == 1 ? '关注成功' : '取消关注成功';
+                    ctx.body = {
+                        code: 1,
+                        msg:msg
+                    };
+                    resolve();
+                }
+            });
+        });
+        await promise;
     }
 
     async checkToken(ctx){

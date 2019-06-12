@@ -25,30 +25,37 @@ class Story {
      * @returns {Promise<void>}
      */
     async addStory(ctx){
+        console.log(ctx.request.body)
         let {userId, storyName, storyContent, themeId} = ctx.request.body;
         const newStory = {
             userId,
             storyName,
             storyContent,
             themeId
-        }
-        await StoryModel.addStory(newStory,
-            (err,docs) =>{
-                if(err){
-                    ctx.body = {
-                        code: 1,
-                        msg: '服务器错误，发表失败~',
-                        data: docs
-                    }
-                }else{
-                    ctx.body = {
-                        code: 1,
-                        msg: '发表成功~',
-                        data: docs
+        };
+        const  promise = new Promise( async (resolve, reject) => {
+            await StoryModel.addStory(newStory,
+                (err,docs) =>{
+                    if(err){
+                        ctx.body = {
+                            code: 1,
+                            msg: '服务器错误，发表失败~',
+                            data: docs
+                        }
+                        reject();
+                    }else{
+                        ctx.body = {
+                            code: 1,
+                            msg: '发表成功~',
+                            data: docs
+                        }
+                        resolve();
                     }
                 }
-            }
-        );
+            );
+        });
+        await promise;
+
     }
 
     /**

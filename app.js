@@ -25,14 +25,18 @@ const server = http.createServer(app.callback());
 const io = socket(server);
 
 //监听socket连接
+var socketObj = {};
 io.on('connection',(socket) =>{
     socket.on('onHandlerGourp',()=>{
         socket.join('onHandlerGourp');
     });
-    socket.on('leaveRoom',(data)=>{
-        var room = data.room;
-        socket.leave(room,(data)=>{
-        });
+    //上线监听
+    socket.on('login',(data)=>{
+        socketObj[data._id] = socket.id;
+    });
+    //私聊
+    socket.on('privateChat',(data)=>{
+        io.to(socketObj[data.toUserId]).emit('privateChatMsg',data);
     });
 });
 

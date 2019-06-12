@@ -36,5 +36,79 @@ const userSchema = new Schema({
     status: { type: Number,default: 1},
     createDate: { type: Date,default: Date.now }
 })
+userSchema.statics = {
+    getUserInfo: function (obj,callback) {
+        return this.aggregate([
+            {
+                $match:{
+                    _id:mongoose.Types.ObjectId(obj.userId)
+                }
+            },
+            {
+                $lookup:{
+                    from: 'follows',
+                    localField: '_id',
+                    foreignField: 'followUserId',
+                    as: 'bfo'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'follows',
+                    localField: '_id',
+                    foreignField: 'userId',
+                    as: 'fo'
+                }
+            },
+            {
+                $project:{
+                    isfo:{
+                        $filter:{
+                            input:'$bfo',
+                            as: 'isfos',
+                            cond:{
+                                $and:[
+                                    {$eq:['$$isfos.userId',mongoose.Types.ObjectId(obj.followUserId)]},
+                                    {$eq:['$$isfos.status',1]}
+                                    ]
+                            }
+                        }
+                    },
+                    bfos:{
+                        $filter:{
+                            input:'$bfo',
+                            as: 'bfoss',
+                            cond:{
+                                $eq:['$$bfoss.status',1]
+                            }
+                        }
+                    },
+                    fos:{
+                        $filter:{
+                            input:'$fo',
+                            as: 'foss',
+                            cond:{
+                                $eq:['$$foss.status',1]
+                            }
+                        }
+                    },
+                    username:1,
+                    _id:1,
+                    autograph:1,
+                    head:1
+                }
+            },
+            {
+                $addFields:{
+                    isfosize:{$size:'$isfo'},
+                    fosize:{$size:'$fos'},
+                    bfosize:{$size:'$bfos'}
+                }
+            }
+        ]).exec((err,docs)=>{
+            callback(err,docs);
+        });
+    }
+}
 const User = mongoose.model('User',userSchema)
 export default User

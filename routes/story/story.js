@@ -12,7 +12,7 @@ const router = new Router({
     prefix:'/api/story'
 });
 
-router.post('/add', Story.addStory);
+router.post('/addStory', Story.addStory);
 router.get('/getList', Story.getList);
 router.post('/support', Story.supportStory);
 router.post('/like', Story.likeStory);

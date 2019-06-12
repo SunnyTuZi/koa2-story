@@ -5,15 +5,17 @@
 
 'use strict';
 
-import user from  './user/user'
-import publicApi from  './public/index'
-import story from  './story/story'
-import bubble from './bubble/bubble'
+import user from  './user/user';
+import publicApi from  './public/index';
+import story from  './story/story';
+import bubble from './bubble/bubble';
+import chat from './chat/index'
 
 export default app => {
     app.use(user.routes(), user.allowedMethods());
     app.use(publicApi.routes(), publicApi.allowedMethods());
     app.use(story.routes(), story.allowedMethods());
     app.use(bubble.routes(), bubble.allowedMethods());
+    app.use(chat.routes(), chat.allowedMethods());
 }
 
