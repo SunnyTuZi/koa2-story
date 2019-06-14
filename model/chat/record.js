@@ -41,7 +41,81 @@ Chatchema.statics = {
         });
     },
     updateRecordStatus:function (form,callback) {
-        return this.findOneAndUpdate({toUserId:form.toUserId,status:0},{status:1},(err,docs)=>{
+        return this.findOneAndUpdate({toUserId:form.toUserId,userId:form.userId,status:0},{status:1},(err,docs)=>{
+            callback(err,docs);
+        });
+    },
+    getUnReadMsgNum: function (form,callback) {
+        return this.count({toUserId:form._id,status:0},(err,docs)=>{
+            callback(err,docs);
+        });
+    },
+    getUnReadMsgList:function (form,callback) {
+        return this.aggregate([
+            {
+                $match:{
+                    toUserId:mongoose.Types.ObjectId(form._id),
+                    $or:[
+                        {
+                            status:{
+                                $eq:0
+                            }
+                        },{
+                            status:{
+                                $eq:1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $group : {
+                    _id : "$userId",
+                    lastcontent: {$last:'$content'},
+                    lastdate: {$last:'$createDate'},
+                    msgs:{$push:"$$ROOT"}
+                }
+            },
+            {
+                $lookup:{
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind:"$user" },
+            {
+                $project:{
+                    'user.username':1,
+                    'user.head':1,
+                    'user._id':1,
+                    lastcontent:1,
+                    lastdate:1,
+                    msgs:1,
+                    unreads:{
+                        $filter:{
+                            input:'$msgs',
+                            as: 'msg',
+                            cond:{$eq:['$$msg.status', 0]}
+                        }
+                    }
+                }
+            },
+            {
+                $addFields:{
+                    unread: {$size:'$unreads'}
+                }
+            },
+            { $sort : {lastdate: -1} }
+
+        ]).exec((err,docs)=>{
+            callback(err,docs);
+        });
+    },
+    getUnReadMsgByUser: function (form,callback) {
+        return this.find({userId:form.userId,toUserId:form.toUserId,status:0}).populate('userId','username head')
+            .exec((err,docs)=>{
             callback(err,docs);
         });
     }

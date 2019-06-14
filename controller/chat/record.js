@@ -56,6 +56,69 @@ class Chat {
         });
         await promise;
     }
+
+    async getUnReadMsgNum(ctx){
+        let form = ctx.query;
+        await SelfChat.getUnReadMsgNum(form,(err,docs)=>{
+            if(err){
+                ctx.body = {
+                    code:0,
+                    msg: '服务器错误，接收信息失败'
+                }
+            }else{
+                ctx.body = {
+                    code: 1,
+                    data: docs
+                }
+            }
+        });
+    }
+
+    async getUnReadMsgList(ctx){
+        let form = ctx.query;
+        const promise  = new Promise( async (resolve, reject) => {
+            await SelfChat.getUnReadMsgList(form,(err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code:0,
+                        msg: '服务器错误，接收信息失败'
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        code: 1,
+                        data: docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+
+    }
+
+    async getUnReadMsgByUser(ctx){
+        let form = ctx.request.body;
+        const promise  = new Promise( async (resolve, reject) => {
+            await SelfChat.getUnReadMsgByUser(form,(err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code:0,
+                        msg: '服务器错误，接收信息失败'
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        code: 1,
+                        data: docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
 }
 
 export default new Chat();

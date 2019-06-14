@@ -14,5 +14,9 @@ const router = new Router({
 
 router.post('/addRecord', Chat.addChatRecord);
 router.post('/updateRecord', Chat.updateRecord);
+router.get('/getUnReadMsgNum', Chat.getUnReadMsgNum);
+router.get('/getUnReadMsgList', Chat.getUnReadMsgList);
+router.post('/getUnReadMsgByUser', Chat.getUnReadMsgByUser);
+
 
 export default router
