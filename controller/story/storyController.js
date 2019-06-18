@@ -25,13 +25,12 @@ class Story {
      * @returns {Promise<void>}
      */
     async addStory(ctx){
-        console.log(ctx.request.body)
-        let {userId, storyName, storyContent, themeId} = ctx.request.body;
+        let {userId, storyName, storyContent, topicId} = ctx.request.body;
         const newStory = {
             userId,
             storyName,
             storyContent,
-            themeId
+            topicId
         };
         const  promise = new Promise( async (resolve, reject) => {
             await StoryModel.addStory(newStory,
@@ -64,10 +63,10 @@ class Story {
      * @returns {Promise<void>}
      */
     async getList(ctx,next){
-        let userId = ctx.query.userId;
+        let form = ctx.query;
         const promise = new Promise(
             async (resolve,reject) =>{
-                await StoryModel.getStoryList(userId,
+                await StoryModel.getStoryList(form,
                     (err,result) => {
                         if (err) {
                             ctx.body = {

@@ -6,13 +6,14 @@
 'use strict';
 
 import TopicModel from '../../model/topic/topic';
+import TopicFollow from '../../model/topic/follow';
 
 class Topic {
     constructor() {
         this.addTopic.bind(this);
         this.getTopicList.bind(this);
         this.getTopicDeatil.bind(this);
-
+        this.followTopic.bind(this);
     }
     async addTopic(ctx){
         let form = ctx.request.body;
@@ -58,9 +59,9 @@ class Topic {
     }
 
     async getTopicDeatil(ctx){
-        let id = ctx.query.id;
+        let form = ctx.query;
         const promise = new Promise(async (resolve, reject) =>{
-            await TopicModel.getTopicDeatil(id,(err,docs)=>{
+            await TopicModel.getTopicDeatil(form,(err,docs)=>{
                 if(err){
                     ctx.body = {
                         code:0,
@@ -71,6 +72,27 @@ class Topic {
                     ctx.body = {
                         code:1,
                         data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
+    async followTopic(ctx){
+        let form = ctx.request.body;
+        const promise = new Promise(async (resolve, reject) => {
+            await TopicFollow.followTopic(form, (err, docs) => {
+                if (err) {
+                    ctx.body = {
+                        code: 0,
+                        msg: '服务器错误，关注失败~'
+                    }
+                    reject();
+                } else {
+                    ctx.body = {
+                        code: 1
                     }
                     resolve();
                 }

@@ -31,17 +31,123 @@ const Topicchema = new Schema({
 Topicchema.statics = {
     addTopic:function (form,callback) {
         return this.create(form,(err,docs)=>{
-           callback(err,docs);
+            if(err) throw err;
+            callback(err,docs);
         });
     },
     getTopicList:function (callback) {
-        return this.find({status:1},(err,docs)=>{
+        return this.aggregate([
+            {
+                $match: {
+                    status:1
+                }
+            },
+            {
+                $group:{
+                    _id:{
+                        _id:'$_id',
+                        topicName:'$topicName',
+                        topicImg:'$topicImg',
+                        topicInfo:'$topicInfo',
+                        size:{
+                            $sum:'$status'
+                        }
+                    }
+                }
+            }
+            // {
+            //     $lookup:{
+            //         from: 'topicfollows',
+            //         localField: '_id',
+            //         foreignField: 'topicId',
+            //         as: 'tf'
+            //     }
+            // },
+            // {
+            //     $addFields: {
+            //         size:{
+            //             $size:'$tf'
+            //         }
+            //     }
+            // },
+            // {
+            //     $project:{
+            //         follows:{
+            //             $filter: {
+            //                 input: '$tf',
+            //                 as: 'tfs',
+            //                 cond: {$eq: [ '$$tfs.status', 1 ]}
+            //             }
+            //         },
+            //         _id:1,
+            //         topicImg:1,
+            //         topicName:1,
+            //         topicInfo:1,
+            //     }
+            // },
+            // {
+            //     $addFields:{
+            //         size:{
+            //             $size:'$follows'
+            //         }
+            //     }
+            // }
+        ]).exec((err,docs)=>{
+            if(err) throw err;
            callback(err,docs);
         });
     },
-    getTopicDeatil:function (id,callback) {
-        return this.findOne({_id:id},(err,docs)=>{
-           callback(err,docs);
+    getTopicDeatil:function (form,callback) {
+        return this.aggregate([
+            {
+                $match:{
+                    _id:mongoose.Types.ObjectId(form.topicId),
+                    status:1
+                }
+            },{
+                $lookup:{
+                    from: 'topicfollows',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'tf'
+                }
+            },
+            {
+                $project: {
+                    follows: {
+                        $filter: {
+                            input: '$tf',
+                            as: 'tfs',
+                            cond: {$eq: [ '$$tfs.status', 1 ]}
+                        }
+                    },
+                    followByUser:{
+                        $filter: {
+                            input: '$tf',
+                            as: 'fbs',
+                            cond: {
+                                $or:[{$eq: ['$$fbs.status', 1 ]},{$eq: ['$$fbs.userId', mongoose.Types.ObjectId(form.userId) ]}]
+                            }
+                        }
+                    },
+                    topicName: 1,
+                    topicInfo: 1,
+                    topicImg: 1
+                }
+            },
+            {
+                $addFields:{
+                    followsize:{
+                        $size:'$follows'
+                    },
+                    isfollow:{
+                        $size:'$followByUser'
+                    }
+                }
+            }
+            ]).exec((err,docs)=>{
+            if(err) throw err;
+            callback(err,docs[0]);
         });
     }
 }

@@ -59,19 +59,24 @@ class Chat {
 
     async getUnReadMsgNum(ctx){
         let form = ctx.query;
-        await SelfChat.getUnReadMsgNum(form,(err,docs)=>{
-            if(err){
-                ctx.body = {
-                    code:0,
-                    msg: '服务器错误，接收信息失败'
+        const promise =  new Promise( async (resolve,reject)=> {
+            await SelfChat.getUnReadMsgNum(form, (err, docs) => {
+                if (err) {
+                    ctx.body = {
+                        code: 0,
+                        msg: '服务器错误，接收信息失败'
+                    }
+                    reject();
+                } else {
+                    ctx.body = {
+                        code: 1,
+                        data: docs
+                    }
+                    resolve();
                 }
-            }else{
-                ctx.body = {
-                    code: 1,
-                    data: docs
-                }
-            }
+            });
         });
+        await promise;
     }
 
     async getUnReadMsgList(ctx){

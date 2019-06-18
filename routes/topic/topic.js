@@ -15,6 +15,6 @@ const router = new Router({
 router.post('/addTopic', Topic.addTopic);
 router.get('/getTopicList', Topic.getTopicList);
 router.get('/getTopicDeatil', Topic.getTopicDeatil);
-
+router.post('/followTopic',Topic.followTopic);
 
 export default router

@@ -16,8 +16,8 @@ const Schema = mongoose.Schema
  * @param userId 发表用户Id
  * @param storyName 故事名称
  * @param storyContent 故事内容
- * @param themeId 分类ID
  * @param status 故事的状态 1:在线/0:违规/2:软删除
+ * @param topicId 话题ID
  * @param createDate 发表时间
  */
 
@@ -28,10 +28,13 @@ const storySchema = new Schema({
     },
     storyName: String,
     storyContent: String,
-    themeId: String,
     status:{
       default: 1,
       type: Number
+    },
+    topicId:{
+        type: Schema.Types.ObjectId,
+        ref: 'Topic'
     },
     createDate: {type: Date, default: Date.now}
 });
@@ -50,12 +53,13 @@ storySchema.statics = {
     },
     /**
      * 获取故事列表
-     * @param uid 用户ID，用来判断点赞收藏状态
+     * @param userId 用户ID，用来判断点赞收藏状态
      * @param callback
      * @returns {Promise}
      */
-    getStoryList: function (uid,callback) {
-        return this.aggregate([
+    getStoryList: function (form,callback) {
+        let {userId,topicId}  = form;
+        var condition = [
             //lookup是连表查询
             {
                 $lookup:{
@@ -122,14 +126,14 @@ storySchema.statics = {
                         $filter:{
                             input:'$like',
                             as: 'li',
-                            cond:{$eq:['$$li.userId', mongoose.Types.ObjectId(uid)]}
+                            cond:{$eq:['$$li.userId', mongoose.Types.ObjectId(userId)]}
                         }
                     },
                     supportByUser:{
                         $filter:{
                             input:'$support',
                             as: 'sup',
-                            cond:{$eq:['$$sup.userId',mongoose.Types.ObjectId(uid)]}
+                            cond:{$eq:['$$sup.userId',mongoose.Types.ObjectId(userId)]}
                         }
                     },
                     userId:'$user',
@@ -165,8 +169,17 @@ storySchema.statics = {
                     coms:1
                 }
             }
-
-        ]).exec(
+        ];
+        //判断是否是在话题中搜素
+        if(topicId){
+            var macth = {
+                $match:{
+                    topicId:mongoose.Types.ObjectId(topicId)
+                }
+            }
+            condition.unshift(macth);
+        }
+        return this.aggregate(condition).exec(
             (err, docs) =>{
                 if(err) throw err;
                 //处理数据,将当前用户的点赞和收藏状态返回
