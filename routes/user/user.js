@@ -19,5 +19,11 @@ router.get('/getCode',User.getCode);
 router.post('/edit',User.editInfo);
 router.get('/getUserInfo',User.getUserInfo);
 router.post('/follow',User.followUser);
+router.get('/getFollowList',User.getFollowList);
+router.get('/getByFollowList',User.getByFollowList);
+router.get('/getLikeByUser',User.getLikeByUser);
+router.get('/getCommentByUser',User.getCommentByUser);
+
+
 
 export default router

@@ -38,8 +38,9 @@ class Topic {
     }
 
     async getTopicList(ctx){
+        let form = ctx.query;
         const promise = new Promise(async (resolve, reject) =>{
-            await TopicModel.getTopicList((err,docs)=>{
+            await TopicModel.getTopicList(form,(err,docs)=>{
                 if(err){
                     ctx.body = {
                         code:0,

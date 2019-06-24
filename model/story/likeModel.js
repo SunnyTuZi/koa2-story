@@ -59,6 +59,153 @@ likeSchema.statics = {
                 }
             }
         )
+    },
+    getLikeByUser:function (obj,callback) {
+        var condition = [
+            //lookup是连表查询
+            {
+              $match:{
+                  status:1,
+                  userId:mongoose.Types.ObjectId(obj.userId)
+              }
+            },
+            {
+                $lookup:{
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'supports',
+                    let:{sid:'$storyId'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                  $eq:['$storyId','$$sid']
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'support'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'comments',
+                    let:{sid:'$storyId'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $eq:['$storyId','$$sid']
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'comment'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'stories',
+                    let:{sid:'$storyId'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $eq:['$_id','$$sid']
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'storys'
+                }
+            },
+            //拆分字符，将user数组变成对象
+            { $unwind:"$user" },
+            { $unwind:"$storys" },
+            //重新定义一些字段
+            {
+                $project:{
+                    goods:{
+                        $filter:{
+                            input:'$support',
+                            as: 'good',
+                            cond:{$eq:['$$good.status', 1]}
+                        }
+
+                    },
+                    bads:{
+                        $filter:{
+                            input:'$support',
+                            as: 'bad',
+                            cond:{$eq:['$$bad.status', 2]}
+                        }
+
+                    },
+                    supportByUser:{
+                        $filter:{
+                            input:'$support',
+                            as: 'sup',
+                            cond: {
+                                $and: [
+                                    {$eq: [ '$$sup.userId', mongoose.Types.ObjectId(obj.userId) ]},
+                                    {$eq: [ '$$sup.status', 1 ]},
+                                ]
+                            }
+                        }
+                    },
+                    userId:'$user',
+                    storys:1,
+                    storyName: '$storys.storyName',
+                    storyContent: '$storys.storyContent',
+                    createDate: '$storys.createDate',
+                    comment:1,
+                    likeByUser:'1',
+                    _id:'$storys._id'
+                }
+            },
+            //添加新的字段
+            {
+                $addFields:{
+                    bad:{ $size:'$bads.status'},
+                    good:{ $size: '$goods.status'},
+                    coms:{ $size:'$comment' }
+                }
+            },
+            //定义需要的字段
+            {
+                $project: {
+                    'userId._id':1,
+                    'userId.uaername':1,
+                    'userId.head':1,
+                    'userId.autograph':1,
+                    'userId.sex':1,
+                    storyName: 1,
+                    storyContent: 1,
+                    createDate: 1,
+                    bads:'$bad',
+                    goods:'$good',
+                    supportByUser:{
+                        $size:'$supportByUser'
+                    },
+                    likeByUser:1,
+                    coms:1,
+                    _id:1
+                }
+            }
+        ];
+        return this.aggregate(condition).exec((err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 }
 

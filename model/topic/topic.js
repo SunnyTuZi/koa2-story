@@ -35,64 +35,49 @@ Topicchema.statics = {
             callback(err,docs);
         });
     },
-    getTopicList:function (callback) {
-        return this.aggregate([
+    getTopicList:function (form,callback) {
+        var condition = [
             {
                 $match: {
                     status:1
                 }
             },
             {
-                $group:{
-                    _id:{
-                        _id:'$_id',
-                        topicName:'$topicName',
-                        topicImg:'$topicImg',
-                        topicInfo:'$topicInfo',
-                        size:{
-                            $sum:'$status'
+                $lookup:{
+                    from:'topicfollows',
+                    let:{tid:'$_id'},
+                    pipeline:[
+                        {
+                            $match:{
+                                $expr:{
+                                    $and:[
+                                        {$eq:['$topicId','$$tid']},
+                                        {$eq:['$status',1]}
+                                    ]
+                                }
+                            }
                         }
+                    ],
+                    as:'tfs'
+                }
+            },
+            {
+                $project: {
+                    topicName:1,
+                    topicInfo:1,
+                    topicImg:1,
+                    size:{
+                        $size:'$tfs'
                     }
                 }
             }
-            // {
-            //     $lookup:{
-            //         from: 'topicfollows',
-            //         localField: '_id',
-            //         foreignField: 'topicId',
-            //         as: 'tf'
-            //     }
-            // },
-            // {
-            //     $addFields: {
-            //         size:{
-            //             $size:'$tf'
-            //         }
-            //     }
-            // },
-            // {
-            //     $project:{
-            //         follows:{
-            //             $filter: {
-            //                 input: '$tf',
-            //                 as: 'tfs',
-            //                 cond: {$eq: [ '$$tfs.status', 1 ]}
-            //             }
-            //         },
-            //         _id:1,
-            //         topicImg:1,
-            //         topicName:1,
-            //         topicInfo:1,
-            //     }
-            // },
-            // {
-            //     $addFields:{
-            //         size:{
-            //             $size:'$follows'
-            //         }
-            //     }
-            // }
-        ]).exec((err,docs)=>{
+        ];
+        if(form.userId){
+            condition[1].$lookup.pipeline[0].$match.$expr.$and.push(
+                {$eq:['$userId',mongoose.Types.ObjectId(form.userId)]}
+            );
+        };
+        return this.aggregate(condition).exec((err,docs)=>{
             if(err) throw err;
            callback(err,docs);
         });
@@ -107,39 +92,42 @@ Topicchema.statics = {
             },{
                 $lookup:{
                     from: 'topicfollows',
-                    localField: '_id',
-                    foreignField: 'topicId',
-                    as: 'tf'
+                    let:{tid:'$_id'},
+                    pipeline:[
+                        {
+                            $match:{
+                                $expr: {
+                                    $and:[
+                                        {$eq:['$topicId','$$tid']},
+                                        {$eq:['$status',1]},
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'tfs'
                 }
             },
             {
                 $project: {
-                    follows: {
-                        $filter: {
-                            input: '$tf',
-                            as: 'tfs',
-                            cond: {$eq: [ '$$tfs.status', 1 ]}
-                        }
-                    },
-                    followByUser:{
-                        $filter: {
-                            input: '$tf',
-                            as: 'fbs',
-                            cond: {
-                                $or:[{$eq: ['$$fbs.status', 1 ]},{$eq: ['$$fbs.userId', mongoose.Types.ObjectId(form.userId) ]}]
-                            }
-                        }
-                    },
                     topicName: 1,
                     topicInfo: 1,
-                    topicImg: 1
+                    topicImg: 1,
+                    followsize:{
+                        $size:'$tfs'
+                    },
+                    followByUser:{
+                        $filter:{
+                            input:'$tfs',
+                            as: 'tf',
+                            cond:{$eq:['$$tf.userId',mongoose.Types.ObjectId(form.userId)]}
+                        }
+
+                    },
                 }
             },
             {
                 $addFields:{
-                    followsize:{
-                        $size:'$follows'
-                    },
                     isfollow:{
                         $size:'$followByUser'
                     }
@@ -150,6 +138,7 @@ Topicchema.statics = {
             callback(err,docs[0]);
         });
     }
+
 }
 
 const Topic = mongoose.model('Topic',Topicchema);

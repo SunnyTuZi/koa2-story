@@ -58,7 +58,7 @@ storySchema.statics = {
      * @returns {Promise}
      */
     getStoryList: function (form,callback) {
-        let {userId,topicId}  = form;
+        let {userId,topicId,isSelf}  = form;
         var condition = [
             //lookup是连表查询
             {
@@ -79,17 +79,22 @@ storySchema.statics = {
             },
             {
                 $lookup:{
-                    from: 'supports',
-                    localField: '_id',
-                    foreignField: 'storyId',
-                    as: 'support'
-                }
-            },
-            {
-                $lookup:{
                     from: 'likes',
-                    localField: '_id',
-                    foreignField: 'storyId',
+                    let:{sid:'$_id'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $and: [
+                                        {$eq:['$status',1]},
+                                        {$eq:['$storyId','$$sid']},
+                                        {$eq:['$userId',mongoose.Types.ObjectId(userId)]}
+                                        ]
+                                }
+
+                            }
+                        }
+                    ],
                     as: 'like'
                 }
             },
@@ -123,17 +128,18 @@ storySchema.statics = {
 
                     },
                     likeByUser:{
-                        $filter:{
-                            input:'$like',
-                            as: 'li',
-                            cond:{$eq:['$$li.userId', mongoose.Types.ObjectId(userId)]}
-                        }
+                        $size:'$like'
                     },
                     supportByUser:{
                         $filter:{
                             input:'$support',
                             as: 'sup',
-                            cond:{$eq:['$$sup.userId',mongoose.Types.ObjectId(userId)]}
+                            cond: {
+                                $and: [
+                                    {$eq: [ '$$sup.userId', mongoose.Types.ObjectId(userId) ]},
+                                    {$eq: [ '$$sup.status', 1 ]},
+                                ]
+                            }
                         }
                     },
                     userId:'$user',
@@ -164,8 +170,10 @@ storySchema.statics = {
                     createDate: 1,
                     bads:'$bad',
                     goods:'$good',
-                    'supportByUser.status':1,
-                    'likeByUser.status':1,
+                    supportByUser:{
+                        $size:'$supportByUser'
+                    },
+                    likeByUser:1,
                     coms:1
                 }
             }
@@ -179,22 +187,18 @@ storySchema.statics = {
             }
             condition.unshift(macth);
         }
+        //判断是否为我的发表
+        if(isSelf){
+            var macth = {
+                $match:{
+                    userId:mongoose.Types.ObjectId(userId)
+                }
+            }
+            condition.unshift(macth);
+        }
         return this.aggregate(condition).exec(
             (err, docs) =>{
                 if(err) throw err;
-                //处理数据,将当前用户的点赞和收藏状态返回
-                for(let item of docs){
-                    if(item.supportByUser.length == 0){
-                        item.supportByUser = 0;
-                    }else{
-                        item.supportByUser = item.supportByUser[0].status;
-                    }
-                    if(item.likeByUser.length == 0){
-                        item.likeByUser = 0;
-                    }else{
-                        item.likeByUser = item.likeByUser[0].status;
-                    }
-                }
                 callback(err,docs);
             }
         )

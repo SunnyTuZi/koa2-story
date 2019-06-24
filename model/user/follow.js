@@ -18,11 +18,11 @@ const Schema = mongoose.Schema
 const followSchema = new Schema({
     userId:{
         type: Schema.Types.ObjectId,
-        ref:'user'
+        ref:'User'
     },
     followUserId:{
         type: Schema.Types.ObjectId,
-        ref:'user'
+        ref:'User'
     },
     status: { type: Number,default: 1},
     createDate: { type: Date,default: Date.now }
@@ -42,6 +42,18 @@ followSchema.statics = {
                     });
                 }
             });
+    },
+    getFollowList:function (obj,callback) {
+        return this.find({status:1,userId:obj.userId}).populate({path:'followUserId',select:'username head autograph _id'}).exec((err,docs)=>{
+           if(err) throw err;
+           callback(err,docs);
+        });
+    },
+    getByFollowList:function (obj,callback) {
+        return this.find({status:1,followUserId:obj.userId}).populate('userId').exec((err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 
 }

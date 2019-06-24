@@ -50,6 +50,37 @@ commentSchema.statics = {
                 callback(err,count);
             }
         );
+    },
+    getMyComment:function (form,callback) {
+        return this.aggregate([
+            {
+                $match:{
+                    userId: mongoose.Types.ObjectId(form.userId)
+                }
+            },{
+                $lookup:{
+                    from:'stories',
+                    let:{sid:'$storyId'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $and:[
+                                        {$eq:['$_id','$$sid']}
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as:'story'
+                }
+            },{
+                $unwind:'$story'
+            }
+        ]).exec((err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 }
 

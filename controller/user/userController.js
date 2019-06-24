@@ -5,14 +5,16 @@
 
 'use strict';
 
-import UserModel from '../../model/user/userModel'
-import FollowModel from '../../model/user/follow'
-import crypto from 'crypto'
-import { createToken, decodeToken } from "../../middlewares/token"
-import fs from 'fs'
-import path from 'path'
-import mkdirs from '../../until/mkdir'
-import captchapng from 'captchapng'
+import UserModel from '../../model/user/userModel';
+import FollowModel from '../../model/user/follow';
+import LikeModel from '../../model/story/likeModel';
+import CommentModel from '../../model/story/commentModel';
+import crypto from 'crypto';
+import { createToken, decodeToken } from "../../middlewares/token";
+import fs from 'fs';
+import path from 'path';
+import mkdirs from '../../until/mkdir';
+import captchapng from 'captchapng';
 
 class User {
     constructor() {
@@ -20,6 +22,7 @@ class User {
         this.register = this.register.bind(this);
         this.login = this.login.bind(this);
         this.uploadAvatar = this.uploadAvatar.bind(this);
+        this.getCommentByUser = this.getCommentByUser.bind(this);
     }
 
     /**
@@ -90,7 +93,6 @@ class User {
                 let token = createToken({account: result.account, id: result._id});
                 ctx.body = {
                     code: 1,
-                    msg: '登陆成功',
                     data: result,
                     token: token
                 }
@@ -261,6 +263,115 @@ class User {
             });
         });
         await promise;
+    }
+
+    /**
+     * 获取关注用户列表
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async getFollowList(ctx){
+        var form = ctx.query;
+        const promise = new Promise( async (resolve, reject) => {
+            await FollowModel.getFollowList(form, (err, docs) => {
+                if(err){
+                    ctx.body={
+                        msg:'服务器错误，获取失败~',
+                        code:0
+                    }
+                    reject();
+                }else{
+                    ctx.body={
+                        code:1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
+    /**
+     * 获取粉丝列表
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async getByFollowList(ctx){
+        var form = ctx.query;
+        const promise = new Promise( async (resolve, reject) => {
+            await FollowModel.getByFollowList(form, (err, docs) => {
+                if(err){
+                    ctx.body={
+                        msg:'服务器错误，获取失败~',
+                        code:0
+                    }
+                    reject();
+                }else{
+                    ctx.body={
+                        code:1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
+    /**
+     * 获取我的收藏
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async getLikeByUser(ctx){
+        var form = ctx.query;
+        const promise = new Promise( async (resolve, reject) => {
+            await LikeModel.getLikeByUser(form, (err, docs) => {
+                if(err){
+                    ctx.body={
+                        msg:'服务器错误，获取失败~',
+                        code:0
+                    }
+                    reject();
+                }else{
+                    ctx.body={
+                        code:1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
+    /**
+     * 获取我的评论
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async getCommentByUser(ctx){
+        var form = ctx.query;
+        const promise = new Promise( async (resolve, reject) => {
+            await CommentModel.getMyComment(form, (err, docs) => {
+                if(err){
+                    ctx.body={
+                        msg:'服务器错误，获取失败~',
+                        code:0
+                    }
+                    reject();
+                }else{
+                    ctx.body={
+                        code:1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+
     }
 
     async checkToken(ctx){
