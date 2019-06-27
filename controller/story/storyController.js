@@ -256,6 +256,33 @@ class Story {
         });
         await promise;
     }
+
+    /**
+     * 模糊查询故事列表
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async getStoryListByText(ctx){
+        let form = ctx.query;
+        const promise = new Promise( async (resolve,reject) =>{
+            await StoryModel.getStoryListByText(form,(err, docs)=>{
+                if(err){
+                    ctx.body = {
+                        code: 0,
+                        msg: '获取故事列表失败~'
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        code: 1,
+                        data: docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
 }
 
 export default new Story();

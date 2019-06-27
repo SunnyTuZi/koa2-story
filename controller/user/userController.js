@@ -9,6 +9,7 @@ import UserModel from '../../model/user/userModel';
 import FollowModel from '../../model/user/follow';
 import LikeModel from '../../model/story/likeModel';
 import CommentModel from '../../model/story/commentModel';
+import SupportModel from '../../model/story/supportModel';
 import crypto from 'crypto';
 import { createToken, decodeToken } from "../../middlewares/token";
 import fs from 'fs';
@@ -355,6 +356,34 @@ class User {
         var form = ctx.query;
         const promise = new Promise( async (resolve, reject) => {
             await CommentModel.getMyComment(form, (err, docs) => {
+                if(err){
+                    ctx.body={
+                        msg:'服务器错误，获取失败~',
+                        code:0
+                    }
+                    reject();
+                }else{
+                    ctx.body={
+                        code:1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+
+    }
+
+    /**
+     * 获取我的点赞
+     * @param ctx
+     * @returns {Promise<void>}
+     */
+    async getMySupport(ctx){
+        var form = ctx.query;
+        const promise = new Promise( async (resolve, reject) => {
+            await SupportModel.getMySupport(form, (err, docs) => {
                 if(err){
                     ctx.body={
                         msg:'服务器错误，获取失败~',

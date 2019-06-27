@@ -58,7 +58,7 @@ storySchema.statics = {
      * @returns {Promise}
      */
     getStoryList: function (form,callback) {
-        let {userId,topicId,isSelf}  = form;
+        let {userId,topicId,isSelf,storyId}  = form;
         var condition = [
             //lookup是连表查询
             {
@@ -161,7 +161,7 @@ storySchema.statics = {
             {
                 $project: {
                     'userId._id':1,
-                    'userId.uaername':1,
+                    'userId.username':1,
                     'userId.head':1,
                     'userId.autograph':1,
                     'userId.sex':1,
@@ -196,12 +196,34 @@ storySchema.statics = {
             }
             condition.unshift(macth);
         }
+        //判断是否为获取详情
+        if(storyId){
+            var macth = {
+                $match:{
+                    _id:mongoose.Types.ObjectId(storyId)
+                }
+            }
+            condition.unshift(macth);
+        }
         return this.aggregate(condition).exec(
             (err, docs) =>{
                 if(err) throw err;
                 callback(err,docs);
             }
         )
+    },
+
+    /**
+     * 模糊查询故事列表
+     * @param form
+     * @param callback
+     */
+    getStoryListByText: function (form,callback) {
+        console.log(form.keyword)
+        return this.find({storyName:{$regex:form.keyword}},(err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 }
 

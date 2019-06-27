@@ -19,6 +19,7 @@ router.post('/like', Story.likeStory);
 router.post('/commentAdd', Story.commentAdd);
 router.get('/getComentList', Story.getComentList);
 router.get('/getCommentTotalByStory',Story.getCommentTotalByStory);
+router.get('/getStoryListByText',Story.getStoryListByText);
 
 
 export default router

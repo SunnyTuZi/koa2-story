@@ -17,6 +17,8 @@ router.post('/updateRecord', Chat.updateRecord);
 router.get('/getUnReadMsgNum', Chat.getUnReadMsgNum);
 router.get('/getUnReadMsgList', Chat.getUnReadMsgList);
 router.post('/getUnReadMsgByUser', Chat.getUnReadMsgByUser);
+router.post('/delMsgByUser', Chat.delMsgByUser);
+
 
 
 export default router

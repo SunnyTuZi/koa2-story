@@ -118,6 +118,12 @@ Chatchema.statics = {
             .exec((err,docs)=>{
             callback(err,docs);
         });
+    },
+    delMsgByUser: function (form,callback) {
+        return this.updateMany({userId:form.userId,toUserId:form.toUserId},{$set:{status:2}},(err,docs)=>{
+           if(err) throw err;
+           callback(err,docs);
+        });
     }
 }
 

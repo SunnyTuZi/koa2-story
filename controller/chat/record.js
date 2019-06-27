@@ -124,6 +124,28 @@ class Chat {
         await promise;
     }
 
+    async delMsgByUser(ctx){
+        let form = ctx.request.body;
+        const promise  = new Promise( async (resolve, reject) => {
+            await SelfChat.delMsgByUser(form,(err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code:0,
+                        msg: '服务器错误，删除失败'
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        code: 1,
+                        data: docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
 }
 
 export default new Chat();

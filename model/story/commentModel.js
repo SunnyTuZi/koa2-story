@@ -54,10 +54,6 @@ commentSchema.statics = {
     getMyComment:function (form,callback) {
         return this.aggregate([
             {
-                $match:{
-                    userId: mongoose.Types.ObjectId(form.userId)
-                }
-            },{
                 $lookup:{
                     from:'stories',
                     let:{sid:'$storyId'},
@@ -76,6 +72,40 @@ commentSchema.statics = {
                 }
             },{
                 $unwind:'$story'
+            },
+            {
+                $lookup:{
+                    from:'users',
+                    localField:'userId',
+                    foreignField:'_id',
+                    as:'user'
+                }
+            },{
+                $unwind:'$user'
+            },
+            {
+                $match:{
+                    $or:[
+                        {
+                            userId:{$eq:mongoose.Types.ObjectId(form.userId)}
+                        },
+                        {
+                            'story.userId':{$eq:mongoose.Types.ObjectId(form.userId)}
+                        }
+                    ]
+                }
+            },
+            {
+                $project:{
+                    commentText:1,
+                    createDate:1,
+                    'story.storyName':1,
+                    'story._id':1,
+                    'user._id':1,
+                    'user.username':1
+                }
+            },{
+                $sort:{createDate:-1}
             }
         ]).exec((err,docs)=>{
             if(err) throw err;
