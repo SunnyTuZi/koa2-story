@@ -16,15 +16,15 @@ async function verifyToken(ctx, next) {
         if (playload) {
             ctx.status = 200 //这里非常重要，只有设置了status，koa-router才识别请求正确继续进入路由
             ctx.body = {
-                "msg": "token验证成功",
-                "status": 200
+                code: 1
             }
             await next()
         }
     } catch (error) {
+        ctx.status = 401;
         ctx.body = {
             "msg": "token验证失败，请重新登陆",
-            "status": 401
+            code: 0
         }
     }
 }

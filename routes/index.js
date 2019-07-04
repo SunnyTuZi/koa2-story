@@ -11,6 +11,7 @@ import story from  './story/story';
 import bubble from './bubble/bubble';
 import chat from './chat/index';
 import topic from './topic/topic';
+import admin from './admin/index';
 
 export default app => {
     app.use(user.routes(), user.allowedMethods());
@@ -19,5 +20,6 @@ export default app => {
     app.use(bubble.routes(), bubble.allowedMethods());
     app.use(chat.routes(), chat.allowedMethods());
     app.use(topic.routes(), topic.allowedMethods());
+    app.use(admin.routes(), admin.allowedMethods());
 }
 

@@ -89,7 +89,7 @@ app.use(koajwt({
         /^\/api\/user\/getCode/,
         /^\/api\/public/,
         /^\/api\/story\/getList/,
-        /^\/socket.io/
+        /^\/api\/admin\/login/
     ]
 }));
 // app.use(verifyToken);

@@ -403,11 +403,18 @@ class User {
 
     }
 
+    /**
+     * token验证
+     * @param ctx
+     * @returns {Promise<void>}
+     */
     async checkToken(ctx){
         let { token } = ctx.body;
         const result = decodeToken(token);
         if(result){
-
+            ctx.body = {
+                code:1
+            }
         }
     }
 
