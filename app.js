@@ -89,6 +89,13 @@ app.use(koajwt({
         /^\/api\/user\/getCode/,
         /^\/api\/public/,
         /^\/api\/story\/getList/,
+        /^\/api\/story\/getComentList/,
+        /^\/api\/story\/getCommentTotalByStory/,
+        /^\/api\/user\/getUserInfo/,
+        /^\/api\/topic\/getTopicList/,
+        /^\/api\/topic\/getTopicDeatil/,
+        /^\/api\/bubble\/getGroupList/,
+        /^\/api\/visit\/addRecord/,
         /^\/api\/admin\/login/
     ]
 }));

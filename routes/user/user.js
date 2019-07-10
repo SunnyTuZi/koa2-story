@@ -12,6 +12,7 @@ const router = new Router({
     prefix:'/api/user'
 });
 
+router.post('/checkToken',User.checkToken);
 router.post('/register', User.register);
 router.post('/login', User.login);
 router.post('/uploadAvatar', User.uploadAvatar);

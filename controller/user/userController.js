@@ -12,6 +12,7 @@ import CommentModel from '../../model/story/commentModel';
 import SupportModel from '../../model/story/supportModel';
 import crypto from 'crypto';
 import { createToken, decodeToken } from "../../middlewares/token";
+import verifyToken from '../../middlewares/checkToken';
 import fs from 'fs';
 import path from 'path';
 import mkdirs from '../../until/mkdir';
@@ -408,14 +409,8 @@ class User {
      * @param ctx
      * @returns {Promise<void>}
      */
-    async checkToken(ctx){
-        let { token } = ctx.body;
-        const result = decodeToken(token);
-        if(result){
-            ctx.body = {
-                code:1
-            }
-        }
+    async checkToken(ctx,next){
+        verifyToken(ctx,next);
     }
 
     /**

@@ -108,6 +108,12 @@ userSchema.statics = {
         ]).exec((err,docs)=>{
             callback(err,docs);
         });
+    },
+    getUserTotal:function (callback) {
+        return this.countDocuments({status:1},(err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 }
 const User = mongoose.model('User',userSchema)

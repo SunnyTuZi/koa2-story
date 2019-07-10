@@ -58,6 +58,12 @@ BubbleGroupchema.statics = {
                 callback(err,docs)
             }
         )
+    },
+    getGroupTotal:function (callback) {
+        return this.countDocuments({},(err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 }
 

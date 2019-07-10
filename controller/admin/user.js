@@ -6,6 +6,10 @@
 'use strict';
 
 import AdminUserModel from "../../model/admin/user";
+import UserModel from '../../model/user/userModel';
+import StoryModel from '../../model/story/storyModel';
+import TopicModel from '../../model/topic/topic';
+import BubbleModel from '../../model/bubble/group';
 import {createToken} from "../../middlewares/token";
 import verifyToken from '../../middlewares/checkToken';
 import crypto from "crypto";
@@ -57,6 +61,49 @@ class AdminUser {
             }
         }
 
+    }
+
+    async getDataTotal(ctx){
+        var data = {};
+        const promiseStory = new Promise(async (resolve, reject) =>{
+            await StoryModel.getStotyTotal((err,docs)=>{
+               if(err) reject();
+               data.storyTotal = docs;
+               resolve();
+            });
+        });
+        const promiseUser = new Promise(async (resolve, reject) =>{
+            await UserModel.getUserTotal((err,docs)=>{
+                if(err) reject();
+                data.userTotal = docs;
+                resolve();
+            });
+        });
+        const promiseTopic = new Promise(async (resolve, reject) =>{
+            await TopicModel.getTopicTotal((err,docs)=>{
+                if(err) reject();
+                data.topicTotal = docs;
+                resolve();
+            });
+        });
+        const promiseBuble = new Promise(async (resolve, reject) =>{
+            await BubbleModel.getGroupTotal((err,docs)=>{
+                if(err) reject();
+                data.groupTotal = docs;
+                resolve();
+            });
+        });
+        await Promise.all([promiseStory, promiseUser,promiseTopic,promiseBuble]).then(() => {
+           ctx.body = {
+               code: 1,
+               data: data
+           }
+        }).catch(() => {
+            ctx.body = {
+                code: 0,
+                msg: '服务器异常，请稍后重试~'
+            }
+        });
     }
 
     /**

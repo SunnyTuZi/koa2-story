@@ -14,6 +14,7 @@ const router = new Router({
 
 router.post('/login', Admin.login);
 router.post('/checkToken', Admin.checkToken);
+router.get('/getDataTotal', Admin.getDataTotal);
 
 
 export default router

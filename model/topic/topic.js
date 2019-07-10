@@ -137,6 +137,12 @@ Topicchema.statics = {
             if(err) throw err;
             callback(err,docs[0]);
         });
+    },
+    getTopicTotal:function (callback) {
+        return this.countDocuments({status:1},(err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 
 }

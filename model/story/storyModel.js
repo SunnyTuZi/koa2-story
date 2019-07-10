@@ -219,8 +219,14 @@ storySchema.statics = {
      * @param callback
      */
     getStoryListByText: function (form,callback) {
-        console.log(form.keyword)
         return this.find({storyName:{$regex:form.keyword}},(err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
+    },
+
+    getStotyTotal:function (callback) {
+        return this.countDocuments({status:1},(err,docs)=>{
             if(err) throw err;
             callback(err,docs);
         });
