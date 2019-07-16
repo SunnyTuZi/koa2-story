@@ -17,7 +17,7 @@ import koajwt from 'koa-jwt'
 import config from './config/config'
 import socket from  'socket.io';
 import http from 'http';
-import verifyToken from './middlewares/checkToken'
+import './until/common';
 
 
 const app = new Koa();

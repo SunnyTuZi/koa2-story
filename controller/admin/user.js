@@ -10,9 +10,11 @@ import UserModel from '../../model/user/userModel';
 import StoryModel from '../../model/story/storyModel';
 import TopicModel from '../../model/topic/topic';
 import BubbleModel from '../../model/bubble/group';
+import VisitModel from  '../../model/visit/visit';
 import {createToken} from "../../middlewares/token";
 import verifyToken from '../../middlewares/checkToken';
 import crypto from "crypto";
+
 
 class AdminUser {
     constructor() {
@@ -98,6 +100,73 @@ class AdminUser {
                code: 1,
                data: data
            }
+        }).catch(() => {
+            ctx.body = {
+                code: 0,
+                msg: '服务器异常，请稍后重试~'
+            }
+        });
+    }
+
+    async getLineData(ctx){
+        var data = {};
+        const visitPromise = new Promise(async (resolve, reject) => {
+            await VisitModel.getWeekData((err,docs)=>{
+               if(!err){
+                   data.visit = docs;
+                   resolve();
+               }
+            });
+        });
+        const userPromise = new Promise(async (resolve, reject) => {
+            await UserModel.getWeekData((err,docs)=>{
+                if(!err) {
+                    data.user = docs;
+                    resolve();
+                }
+            });
+        });
+        const groupPromise = new Promise(async (resolve, reject) => {
+            await BubbleModel.getWeekData((err,docs)=>{
+                if(!err){
+                    data.group = docs;
+                    resolve();
+                }
+            });
+        });
+        const storyPromise = new Promise(async (resolve, reject) => {
+            await StoryModel.getWeekData((err,docs)=>{
+                if(!err){
+                    data.story = docs;
+                    resolve();
+                }
+            });
+        });
+        await Promise.all([visitPromise, userPromise,groupPromise,storyPromise]).then(() => {
+            var now_date = new Date();
+            var now_timep = now_date.getTime();
+            var dateArr = [];
+            for (let i = 6; i >= 0 ; i --) {
+                var _date = new Date(now_timep - i * 24 * 60 * 60 * 1000).format('MM-dd');
+                dateArr.push(_date);
+            }
+            for(let key in data){
+                let arr = data[key];
+                let status = false;
+                for(let x = 0;x < dateArr.length;x++){
+                    let status = true;
+                    for(let y = 0;y < arr.length;y++){
+                        if(dateArr[x] == arr[y]._id){
+                            status =  false;
+                        }
+                    }
+                    if(status) arr.splice(x,0,{_id:dateArr[x],count:0});
+                }
+            }
+            ctx.body = {
+                code: 1,
+                data: data
+            }
         }).catch(() => {
             ctx.body = {
                 code: 0,

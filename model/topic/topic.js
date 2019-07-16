@@ -68,7 +68,10 @@ Topicchema.statics = {
                     topicImg:1,
                     size:{
                         $size:'$tfs'
-                    }
+                    },
+                    status:1,
+                    createDate: 1,
+                    key:'$_id'
                 }
             }
         ];

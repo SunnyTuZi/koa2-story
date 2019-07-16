@@ -13,5 +13,5 @@ const router = new Router({
 });
 
 router.post('/addRecord', Visit.addVisitRecord);
-
+router.get('/getVisitCount', Visit.getVisitCount);
 export default router

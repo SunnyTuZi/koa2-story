@@ -230,6 +230,33 @@ storySchema.statics = {
             if(err) throw err;
             callback(err,docs);
         });
+    },
+
+    getWeekData: function (callback) {
+        var condition = [
+            {
+                $match: {
+                    createDate: {
+                        $gt: new Date(new Date().valueOf() - 24 * 60 * 60 * 1000 * 7),
+                    }
+                }
+            },
+            {
+                $project: {
+                    day: {$substr: [ {"$add": [ "$createDate", 28800000 ]}, 5, 5 ]},//时区数据校准，8小时换算成毫秒数为8*60*60*1000=288000后分割成YYYY-MM-DD日期格式便于分组
+                }
+            },
+            {
+                $group: {
+                    _id: '$day',
+                    count: {$sum: 1}
+                }
+            }
+        ];
+        return this.aggregate(condition).exec((err, docs) => {
+            if (err) throw err;
+            callback(err, docs);
+        });
     }
 }
 
