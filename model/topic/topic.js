@@ -38,11 +38,6 @@ Topicchema.statics = {
     getTopicList:function (form,callback) {
         var condition = [
             {
-                $match: {
-                    status:1
-                }
-            },
-            {
                 $lookup:{
                     from:'topicfollows',
                     let:{tid:'$_id'},
@@ -75,6 +70,15 @@ Topicchema.statics = {
                 }
             }
         ];
+        if(form.status){
+            condition.unshift(
+                {
+                    $match:{
+                        status:1
+                    }
+                }
+            )
+        }
         if(form.userId){
             condition[1].$lookup.pipeline[0].$match.$expr.$and.push(
                 {$eq:['$userId',mongoose.Types.ObjectId(form.userId)]}
@@ -145,6 +149,12 @@ Topicchema.statics = {
         return this.countDocuments({status:1},(err,docs)=>{
             if(err) throw err;
             callback(err,docs);
+        });
+    },
+    updateTopic: function (form,callback) {
+        return this.findOneAndUpdate({_id:form._id},{topicName:form.topicName,topicInfo:form.topicInfo,topicImg:form.topicImg,status:form.status},(err,docs)=>{
+           if(err) throw err;
+           callback(err,docs);
         });
     }
 

@@ -162,6 +162,7 @@ class AdminUser {
                     }
                     if(status) arr.splice(x,0,{_id:dateArr[x],count:0});
                 }
+
             }
             ctx.body = {
                 code: 1,
@@ -173,6 +174,28 @@ class AdminUser {
                 msg: '服务器异常，请稍后重试~'
             }
         });
+    }
+
+    async updateTopic(ctx){
+        let form = ctx.request.body;
+        const promise = new Promise(async (resolve, reject) => {
+           await TopicModel.updateTopic(form,(err,docs)=>{
+               if(err){
+                   ctx.body = {
+                       code: 0,
+                       msg: '服务器错误，修改失败'
+                   }
+                   reject();
+               }else{
+                   ctx.body  ={
+                       data:docs,
+                       code:1
+                   }
+                   resolve();
+               }
+            })
+        });
+        await promise;
     }
 
     /**
