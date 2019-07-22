@@ -19,5 +19,7 @@ router.get('/getDataTotal', Admin.getDataTotal);
 router.get('/getLineData',Admin.getLineData);
 router.post('/upload',Upload.uploadFiles);
 router.post('/updateTopic',Admin.updateTopic);
+router.get('/getTopicData',Admin.getTopicRadar);
+
 
 export default router

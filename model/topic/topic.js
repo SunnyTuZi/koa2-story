@@ -156,6 +156,74 @@ Topicchema.statics = {
            if(err) throw err;
            callback(err,docs);
         });
+    },
+    getTopicRadar: function (callback) {
+        var condition = [
+            {
+              $project:{
+                  topicName:1
+              }
+            },
+            {
+                $lookup: {
+                    from: 'stories',
+                    let: {tid: '$_id'},
+                    pipeline: [ {
+                        $match: {
+                            $expr: {
+                                $eq: [ '$topicId', '$$tid' ]
+                            }
+                        },
+
+                    },{
+                        $project:{
+                          _id:1
+                        }
+                    }],
+                    as: 'story'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'topicfollows',
+                    let: {tid: '$_id'},
+                    pipeline: [ {
+                        $match: {
+                            $expr: {
+                                $eq: [ '$topicId', '$$tid' ]
+                            }
+                        },
+
+                    },{
+                        $project:{
+                            _id:1
+                        }
+                    }],
+                    as: 'tf'
+                }
+            },
+            {
+                $addFields: {
+                    storys:{
+                        $size:'$story'
+                    },
+                    tfs:{
+                        $size:'$tf'
+                    }
+                }
+            },
+            {
+                $project:{
+                    topicName:1,
+                    storys:1,
+                    tfs:1
+                }
+            }
+        ];
+        return this.aggregate(condition).exec((err,docs)=>{
+           if(err) throw err;
+           callback(err,docs);
+        });
     }
 
 }

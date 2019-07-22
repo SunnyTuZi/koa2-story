@@ -198,6 +198,26 @@ class AdminUser {
         await promise;
     }
 
+    async getTopicRadar(ctx){
+        const promise = new Promise(async (resolve, reject) => {
+            await TopicModel.getTopicRadar((err,docs)=>{
+               if(err){
+                   ctx.body = {
+                       code:0
+                   }
+                   reject();
+               }else{
+                   ctx.body = {
+                       code:1,
+                       data:docs
+                   }
+                   resolve();
+               }
+            });
+        });
+        await promise;
+    }
+
     /**
      * token验证
      * @param ctx
