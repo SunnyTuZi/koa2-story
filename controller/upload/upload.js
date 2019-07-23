@@ -28,7 +28,7 @@ class Upload{
                 const upStream = fs.createWriteStream(filePath+`${file.name}`);
                 // 可读流通过管道写入可写流
                 reader.pipe(upStream);
-                let new_file_path = `${file.name}`;
+                let new_file_path = '/'+`${file.name}`;
                 ctx.body = {
                     code: 1,
                     imgUrl: new_file_path

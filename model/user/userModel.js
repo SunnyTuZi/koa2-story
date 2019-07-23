@@ -154,6 +154,43 @@ userSchema.statics = {
             if(err) throw err;
             callback(err,docs);
         });
+    },
+    getHotUser:function (callback) {
+        var condtion = [
+            {
+                $lookup:{
+                    from: 'follows',
+                    localField: '_id',
+                    foreignField: 'followUserId',
+                    as: 'bfo'
+                }
+            },
+            {
+                $addFields:{
+                    fans:{
+                        $size:'$bfo'
+                    }
+                }
+            },
+            {
+                $sort:{
+                    fans:-1
+                }
+            },
+            {$limit:5},
+            {
+                $project:{
+                    key:'$_id',
+                    username:1,
+                    head:1,
+                    fans:1
+                }
+            }
+        ];
+        return this.aggregate(condtion).exec((err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 }
 const User = mongoose.model('User',userSchema)

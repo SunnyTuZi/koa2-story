@@ -218,6 +218,46 @@ class AdminUser {
         await promise;
     }
 
+    async getHotUser(ctx){
+        const promise = new Promise( async (resolve, reject) => {
+           await UserModel.getHotUser((err,docs)=>{
+              if(err){
+                  ctx.body = {
+                      code: 0
+                  }
+                  reject();
+              }else{
+                  ctx.body = {
+                      code: 1,
+                      data:docs
+                  }
+                  resolve();
+              }
+           });
+        });
+        await promise;
+    }
+
+    async getHotTopic(ctx){
+        const promise = new Promise( async (resolve, reject) => {
+            await TopicModel.getHotTopic((err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code: 0
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        code: 1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
     /**
      * token验证
      * @param ctx

@@ -20,6 +20,6 @@ router.get('/getLineData',Admin.getLineData);
 router.post('/upload',Upload.uploadFiles);
 router.post('/updateTopic',Admin.updateTopic);
 router.get('/getTopicData',Admin.getTopicRadar);
-
-
+router.get('/getHotUser',Admin.getHotUser);
+router.get('/getHotTopic',Admin.getHotTopic);
 export default router

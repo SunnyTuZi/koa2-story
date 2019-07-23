@@ -224,6 +224,43 @@ Topicchema.statics = {
            if(err) throw err;
            callback(err,docs);
         });
+    },
+    getHotTopic:function (callback) {
+        var condtion = [
+            {
+                $lookup:{
+                    from: 'topicfollows',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'tfo'
+                }
+            },
+            {
+                $addFields:{
+                    fans:{
+                        $size:'$tfo'
+                    }
+                }
+            },
+            {
+                $sort:{
+                    fans:-1
+                }
+            },
+            {$limit:5},
+            {
+                $project:{
+                    key:'$_id',
+                    topicName:1,
+                    topicImg:1,
+                    fans:1
+                }
+            }
+        ];
+        return this.aggregate(condtion).exec((err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 
 }
