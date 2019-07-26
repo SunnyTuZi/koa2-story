@@ -214,6 +214,138 @@ storySchema.statics = {
     },
 
     /**
+     * 获取故事列表
+     * @param userId 用户ID，用来判断点赞收藏状态
+     * @param callback
+     * @returns {Promise}
+     */
+    getStoryListAdmin: function (form,callback) {
+        let {page = 1,pageSize = 10} = form;
+        page = Number(page)||1;
+        pageSize = Number(pageSize)||10;
+        var condition = [
+            //lookup是连表查询
+            {
+                $skip:(page-1)*pageSize
+            },
+            {
+                $limit:pageSize
+            },
+            {
+                $lookup:{
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'supports',
+                    localField: '_id',
+                    foreignField: 'storyId',
+                    as: 'support'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'likes',
+                    let:{sid:'$_id'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $and: [
+                                        {$eq:['$status',1]},
+                                        {$eq:['$storyId','$$sid']},
+                                    ]
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'like'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'storyId',
+                    as: 'comment'
+                }
+            },
+            //拆分字符，将user数组变成对象
+            { $unwind:"$user" },
+            //重新定义一些字段
+            {
+                $project:{
+                    goods:{
+                        $filter:{
+                            input:'$support',
+                            as: 'good',
+                            cond:{$eq:['$$good.status', 1]}
+                        }
+
+                    },
+                    bads:{
+                        $filter:{
+                            input:'$support',
+                            as: 'bad',
+                            cond:{$eq:['$$bad.status', 2]}
+                        }
+
+                    },
+                    likes:{
+                        $size:'$like'
+                    },
+                    userId:'$user',
+                    storyName: '$storyName',
+                    storyContent: '$storyContent',
+                    createDate: '$createDate',
+                    comment:1,
+                    status:1,
+                    total:1
+                }
+            },
+            //添加新的字段
+            {
+                $addFields:{
+                    bad:{ $size:'$bads.status'},
+                    good:{ $size: '$goods.status'},
+                    coms:{ $size:'$comment' }
+                }
+            },
+            //定义需要的字段
+            {
+                $project: {
+                    head:'$userId.head',
+                    username:'$userId.username',
+                    storyName: 1,
+                    storyContent: 1,
+                    createDate: 1,
+                    bads:'$bad',
+                    goods:'$good',
+                    coms:1,
+                    likes:1,
+                    status:1,
+                    key:'$_id'
+                }
+            }
+        ];
+        return this.aggregate(condition).exec(
+            (err, docs) =>{
+                if(err) throw err;
+                this.countDocuments({},(err,total)=>{
+                    if(err) throw err;
+
+                    callback(err,{list:docs,total: total});
+                });
+            }
+        )
+    },
+
+    /**
      * 模糊查询故事列表
      * @param form
      * @param callback

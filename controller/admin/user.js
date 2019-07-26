@@ -258,6 +258,27 @@ class AdminUser {
         await promise;
     }
 
+    async getStoryList(ctx){
+        let form = ctx.query;
+        const promise = new Promise( async (resolve, reject) => {
+            await StoryModel.getStoryListAdmin(form,(err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code: 0
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        code: 1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
     /**
      * token验证
      * @param ctx
