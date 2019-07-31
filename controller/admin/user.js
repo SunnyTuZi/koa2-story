@@ -279,6 +279,26 @@ class AdminUser {
         await promise;
     }
 
+    async updateStory(ctx){
+        let form = ctx.request.body;
+        const promise = new Promise( async (resolve, reject) => {
+            await StoryModel.updateStoryStatus(form,(err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code: 0
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        code: 1
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
     /**
      * token验证
      * @param ctx

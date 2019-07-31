@@ -23,6 +23,6 @@ router.get('/getTopicData',Admin.getTopicRadar);
 router.get('/getHotUser',Admin.getHotUser);
 router.get('/getHotTopic',Admin.getHotTopic);
 router.get('/getStoryList',Admin.getStoryList);
-
+router.post('/updateStoryStatus',Admin.updateStory);
 
 export default router

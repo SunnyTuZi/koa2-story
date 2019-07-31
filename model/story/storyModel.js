@@ -402,6 +402,13 @@ storySchema.statics = {
             if (err) throw err;
             callback(err, docs);
         });
+    },
+    updateStoryStatus: function (obj,callback) {
+        console.log(obj)
+        return this.findOneAndUpdate({_id:obj._id},{status:obj.status},(err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 }
 
