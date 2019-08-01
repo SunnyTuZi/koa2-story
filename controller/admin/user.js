@@ -279,6 +279,27 @@ class AdminUser {
         await promise;
     }
 
+    async getTopicList(ctx){
+        let form = ctx.query;
+        const promise = new Promise( async (resolve, reject) => {
+            await TopicModel.getTopicListAdmin(form,(err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code: 0
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        code: 1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
     async updateStory(ctx){
         let form = ctx.request.body;
         const promise = new Promise( async (resolve, reject) => {

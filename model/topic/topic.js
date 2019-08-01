@@ -261,7 +261,69 @@ Topicchema.statics = {
             if(err) throw err;
             callback(err,docs);
         });
-    }
+    },
+    getTopicListAdmin:function (form,callback) {
+        let {page = 1,pageSize = 10} = form;
+        page = Number(page)||1;
+        pageSize = Number(pageSize)||10;
+        var condition = [
+            //lookup是连表查询
+            {
+                $skip:(page-1)*pageSize
+            },
+            {
+                $limit:pageSize
+            },
+            {
+                $lookup:{
+                    from:'topicfollows',
+                    let:{tid:'$_id'},
+                    pipeline:[
+                        {
+                            $match:{
+                                $expr:{
+                                    $and:[
+                                        {$eq:['$topicId','$$tid']},
+                                        {$eq:['$status',1]}
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as:'tfs'
+                }
+            },
+            {
+                $project: {
+                    topicName:1,
+                    topicInfo:1,
+                    topicImg:1,
+                    size:{
+                        $size:'$tfs'
+                    },
+                    status:1,
+                    createDate: 1,
+                    key:'$_id'
+                }
+            }
+        ];
+        var wheres = {};
+        if(form.topicNameKey){
+            wheres.topicName = {
+                $regex:eval('/'+form.topicNameKey+'/')
+            }
+        }
+        if(form.topicStatus){
+            wheres.status = Number(form.topicStatus)
+        }
+        return this.aggregate(condition).exec((err,docs)=>{
+            if(err) throw err;
+            this.countDocuments(wheres,(err,total)=>{
+                if(err) throw err;
+                callback(err,{list:docs,total: total});
+            });
+        });
+    },
 
 }
 

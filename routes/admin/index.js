@@ -24,5 +24,7 @@ router.get('/getHotUser',Admin.getHotUser);
 router.get('/getHotTopic',Admin.getHotTopic);
 router.get('/getStoryList',Admin.getStoryList);
 router.post('/updateStoryStatus',Admin.updateStory);
+router.get('/getTopicList',Admin.getTopicList);
+
 
 export default router

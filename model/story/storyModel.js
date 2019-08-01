@@ -223,6 +223,7 @@ storySchema.statics = {
         let {page = 1,pageSize = 10} = form;
         page = Number(page)||1;
         pageSize = Number(pageSize)||10;
+
         var condition = [
             //lookup是连表查询
             {
@@ -333,12 +334,25 @@ storySchema.statics = {
                 }
             }
         ];
+        var wheres = {};
+        if(form.storyName){
+            wheres.storyName = {
+                $regex:eval('/'+form.storyName+'/')
+            }
+        }
+        if(form.storyStatus){
+            wheres.status = Number(form.storyStatus)
+        }
+        if(form.storyName || form.storyStatus){
+            condition.unshift({
+                $match:wheres
+            });
+        }
         return this.aggregate(condition).exec(
             (err, docs) =>{
                 if(err) throw err;
-                this.countDocuments({},(err,total)=>{
+                this.countDocuments(wheres,(err,total)=>{
                     if(err) throw err;
-
                     callback(err,{list:docs,total: total});
                 });
             }
