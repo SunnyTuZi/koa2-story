@@ -8,6 +8,7 @@
 import Router from 'koa-router';
 import Admin from '../../controller/admin/user';
 import Upload from '../../controller/upload/upload';
+import User from "../../controller/user/userController";
 
 const router = new Router({
     prefix:'/api/admin'
@@ -25,6 +26,7 @@ router.get('/getHotTopic',Admin.getHotTopic);
 router.get('/getStoryList',Admin.getStoryList);
 router.post('/updateStoryStatus',Admin.updateStory);
 router.get('/getTopicList',Admin.getTopicList);
+router.get('/getUserList',Admin.getUserList);
 
 
 export default router

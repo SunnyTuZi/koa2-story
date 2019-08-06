@@ -191,7 +191,61 @@ userSchema.statics = {
             if(err) throw err;
             callback(err,docs);
         });
-    }
+    },
+    getUserList: function (callback) {
+        return this.aggregate([
+            {
+                $lookup:{
+                    from: 'follows',
+                    localField: '_id',
+                    foreignField: 'followUserId',
+                    as: 'bfo'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'follows',
+                    localField: '_id',
+                    foreignField: 'userId',
+                    as: 'fo'
+                }
+            },
+            {
+                $project:{
+                    bfos:{
+                        $filter:{
+                            input:'$bfo',
+                            as: 'bfoss',
+                            cond:{
+                                $eq:['$$bfoss.status',1]
+                            }
+                        }
+                    },
+                    fos:{
+                        $filter:{
+                            input:'$fo',
+                            as: 'foss',
+                            cond:{
+                                $eq:['$$foss.status',1]
+                            }
+                        }
+                    },
+                    username:1,
+                    _id:1,
+                    autograph:1,
+                    head:1
+                }
+            },
+            {
+                $addFields:{
+                    fosize:{$size:'$fos'},
+                    bfosize:{$size:'$bfos'}
+                }
+            }
+        ]).exec((err,docs)=>{
+            callback(err,docs);
+        });
+    },
 }
 const User = mongoose.model('User',userSchema)
 export default User

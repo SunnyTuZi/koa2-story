@@ -26,4 +26,6 @@ router.get('/getLikeByUser',User.getLikeByUser);
 router.get('/getCommentByUser',User.getCommentByUser);
 router.get('/getMySupport',User.getMySupport);
 
+
+
 export default router
