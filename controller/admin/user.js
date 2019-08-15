@@ -321,8 +321,9 @@ class AdminUser {
     }
 
     async getUserList(ctx){
+        let form  = ctx.query;
         const promise = new Promise( async (resolve, reject) => {
-            await UserModel.getUserList((err,docs)=>{
+            await UserModel.getUserList(form,(err,docs)=>{
                 if(err){
                     ctx.body = {
                         code: 0

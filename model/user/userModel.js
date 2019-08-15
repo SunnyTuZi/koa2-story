@@ -192,58 +192,127 @@ userSchema.statics = {
             callback(err,docs);
         });
     },
-    getUserList: function (callback) {
-        return this.aggregate([
+    getUserList: function (form,callback) {
+        let {page = 1,pageSize = 10} = form;
+        page = Number(page)||1;
+        pageSize = Number(pageSize)||10;
+
+        var condition = [
+            {
+                $skip:(page-1)*pageSize
+            },
+            {
+                $limit:pageSize
+            },
             {
                 $lookup:{
-                    from: 'follows',
-                    localField: '_id',
-                    foreignField: 'followUserId',
-                    as: 'bfo'
+                    from: 'stories',
+                    let:{uid:'$_id'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $eq:['$userId','$$uid']
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'storys'
                 }
             },
             {
                 $lookup:{
                     from: 'follows',
-                    localField: '_id',
-                    foreignField: 'userId',
-                    as: 'fo'
+                    let:{uid:'$_id'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $eq:['$userId','$$uid']
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'fos'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'follows',
+                    let:{uid:'$_id'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $eq:['$followUserId','$$uid']
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'bfos'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'stories',
+                    let:{uid:'$_id'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $eq:['$userId','$$uid']
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'storys'
                 }
             },
             {
                 $project:{
-                    bfos:{
-                        $filter:{
-                            input:'$bfo',
-                            as: 'bfoss',
-                            cond:{
-                                $eq:['$$bfoss.status',1]
-                            }
-                        }
+                    storysize:{
+                        $size:'$storys'
                     },
-                    fos:{
-                        $filter:{
-                            input:'$fo',
-                            as: 'foss',
-                            cond:{
-                                $eq:['$$foss.status',1]
-                            }
-                        }
+                    fosize:{
+                        $size:'$fos'
+                    },
+                    bfosize:{
+                        $size:'$bfos'
                     },
                     username:1,
                     _id:1,
                     autograph:1,
-                    head:1
-                }
-            },
-            {
-                $addFields:{
-                    fosize:{$size:'$fos'},
-                    bfosize:{$size:'$bfos'}
+                    head:1,
+                    status:1
                 }
             }
-        ]).exec((err,docs)=>{
-            callback(err,docs);
+        ];
+
+        let wheres = {};
+        if(form.userName){
+            wheres.username = {
+                $regex:eval('/'+form.userName+'/')
+            }
+        }
+        if(form.userStatus){
+            wheres.status = Number(form.userStatus)
+        }
+        if(form.userName || form.userStatus){
+            condition.unshift({
+                $match:wheres
+            });
+        }
+
+        return this.aggregate(condition).exec((err,docs)=>{
+            if(err) throw err;
+            this.countDocuments(wheres,(err,total)=>{
+                if(err) throw err;
+                callback(err,{list:docs,total: total});
+            });
         });
     },
 }

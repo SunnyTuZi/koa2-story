@@ -334,7 +334,7 @@ storySchema.statics = {
                 }
             }
         ];
-        var wheres = {};
+        let wheres = {};
         if(form.storyName){
             wheres.storyName = {
                 $regex:eval('/'+form.storyName+'/')
