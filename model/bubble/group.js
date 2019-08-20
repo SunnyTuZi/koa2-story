@@ -104,6 +104,76 @@ BubbleGroupchema.statics = {
             if(err) throw err;
             callback(err,docs);
         });
+    },
+    getGroupList:function (form,callback) {
+        let {page = 1,pageSize = 10} = form;
+        page = Number(page)||1;
+        pageSize = Number(pageSize)||10;
+        var condition = [
+            //lookup是连表查询
+            {
+                $skip:(page-1)*pageSize
+            },
+            {
+                $limit:pageSize
+            },
+            {
+                $lookup:{
+                    from:'users',
+                    let:{uid:'$userId'},
+                    pipeline:[
+                        {
+                            $match:{
+                                $expr:{
+                                    $and:[
+                                        {$eq:['$_id','$$uid']},
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as:'atuor'
+                }
+            },
+            {
+                $project: {
+                    groupName:1,
+                    username:'$atuor.username',
+                    head:'$atuor.head',
+                    staff:1,
+                    status:1,
+                    createDate: 1,
+                    key:'$_id'
+                }
+            }
+        ];
+        var wheres = {};
+        if(form.groupNameKey){
+            wheres.groupName = {
+                $regex:eval('/'+form.groupNameKey+'/')
+            }
+        }
+        if(form.status){
+            wheres.status = Number(form.status);
+        }
+        if(form.groupNameKey || form.status){
+            condition.unshift({
+                $match:wheres
+            });
+        }
+        return this.aggregate(condition).exec((err,docs)=>{
+            if(err) throw err;
+            this.countDocuments(wheres,(err,total)=>{
+                if(err) throw err;
+                callback(err,{list:docs,total: total});
+            });
+        });
+    },
+    updateGroupStatus:function (form,callback) {
+        return this.findOneAndUpdate({_id:form._id},{status:0},(err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
     }
 }
 

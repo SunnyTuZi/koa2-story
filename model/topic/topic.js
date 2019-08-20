@@ -316,6 +316,11 @@ Topicchema.statics = {
         if(form.topicStatus){
             wheres.status = Number(form.topicStatus)
         }
+        if(form.topicNameKey || form.topicStatus){
+            condition.unshift({
+                $match:wheres
+            });
+        }
         return this.aggregate(condition).exec((err,docs)=>{
             if(err) throw err;
             this.countDocuments(wheres,(err,total)=>{
