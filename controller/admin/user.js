@@ -176,6 +176,46 @@ class AdminUser {
         });
     }
 
+    async getStoryBar(ctx){
+        const hander = (num) => num >= 10 ? num : '0' + num;
+        const storyPromise = new Promise(async (resolve, reject) => {
+            await StoryModel.getBarData((err,docs)=>{
+                if(!err){
+                    let dateArr = [];
+                    let montns = new Date().getMonth()+1;
+                    for(let i=0;i<12;i++){
+                        let status = false,item = null;
+                        montns = montns - 1 == 0 ? 12:montns - 1;
+                        for(let j=0;j<docs.length;j++){
+                            if(docs[j]._id == hander(montns)){
+                                status = true;
+                                item  = docs[j];
+                                break;
+                            }
+                        }
+                        if(status){
+                            dateArr.push(item);
+                        }else{
+                            dateArr.push({_id:hander(montns),count:0});
+                        }
+                    }
+                    ctx.body = {
+                        data:dateArr,
+                        code:1
+                    };
+                    resolve();
+                }else{
+                    ctx.body = {
+                        code: 0
+                    };
+                    reject();
+                }
+            });
+        });
+        await storyPromise;
+
+    }
+
     async updateTopic(ctx){
         let form = ctx.request.body;
         const promise = new Promise(async (resolve, reject) => {

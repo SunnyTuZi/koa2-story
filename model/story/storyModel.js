@@ -378,9 +378,9 @@ storySchema.statics = {
         });
     },
 
-    getWeekData: function (callback) {
+   getWeekData: function (callback) {
         var condition = [
-            {
+             {
                 $match:{
                     createDate:{
                         $gt: new Date(new Date(new Date().format('yyyy-MM-dd 23:59:59')).valueOf() - 24 * 60 * 60 * 1000 * 7),
@@ -417,8 +417,48 @@ storySchema.statics = {
             callback(err, docs);
         });
     },
+    getBarData: function (callback) {
+        var years = new Date().getFullYear()-1;
+        var gtDate = new Date(new Date().setFullYear(years));
+        var condition = [
+            {
+                $match:{
+                    createDate:{
+                        $gt: gtDate,
+                    }
+                }
+            },
+            {
+                $project : {
+                    day : {$substr: [{"$add":["$createDate", 28800000]}, 5, 2] },//时区数据校准，8小时换算成毫秒数为8*60*60*1000=288000后分割成YYYY-MM-DD日期格式便于分组
+                    createDate: 1
+                }
+            },
+            {
+                $group:{
+                    _id:'$day',
+                    count: { $sum: 1 },
+                    date:{$last:'$createDate'}
+                }
+            },
+            {
+                $sort:{
+                    date:1
+                }
+            },
+            {
+                $project:{
+                    _id:1,
+                    count:1
+                }
+            }
+        ];
+        return this.aggregate(condition).exec((err, docs) => {
+            if (err) throw err;
+            callback(err, docs);
+        });
+    },
     updateStoryStatus: function (obj,callback) {
-        console.log(obj)
         return this.findOneAndUpdate({_id:obj._id},{status:obj.status},(err,docs)=>{
             if(err) throw err;
             callback(err,docs);

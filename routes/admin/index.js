@@ -29,5 +29,5 @@ router.get('/getTopicList',Admin.getTopicList);
 router.get('/getUserList',Admin.getUserList);
 router.get('/getGroupList',Admin.getGroupList);
 router.post('/updateGroupStatus',Admin.updateGroupStatus);
-
+router.get('/getStoryBar',Admin.getStoryBar);
 export default router
