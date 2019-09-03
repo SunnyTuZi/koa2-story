@@ -30,4 +30,7 @@ router.get('/getUserList',Admin.getUserList);
 router.get('/getGroupList',Admin.getGroupList);
 router.post('/updateGroupStatus',Admin.updateGroupStatus);
 router.get('/getStoryBar',Admin.getStoryBar);
+router.get('/getHotStoryToday',Admin.getHotStoryToday);
+router.get('/getTopStory',Admin.getTopStory);
+
 export default router

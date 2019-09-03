@@ -33,8 +33,8 @@ const storySchema = new Schema({
       type: Number
     },
     topicId:{
-        type: Schema.Types.ObjectId,
-        ref: 'Topic'
+        default: 0,
+        type: Number
     },
     createDate: {type: Date, default: Date.now}
 });
@@ -377,8 +377,12 @@ storySchema.statics = {
             callback(err,docs);
         });
     },
-
-   getWeekData: function (callback) {
+    /**
+     * 获取一周数据统计
+     * @param callback
+     * @returns {Promise}
+     */
+    getWeekData: function (callback) {
         var condition = [
              {
                 $match:{
@@ -417,6 +421,11 @@ storySchema.statics = {
             callback(err, docs);
         });
     },
+    /**
+     * 获取一年内的故事发表
+     * @param callback
+     * @returns {Promise}
+     */
     getBarData: function (callback) {
         var years = new Date().getFullYear()-1;
         var gtDate = new Date(new Date().setFullYear(years));
@@ -458,9 +467,158 @@ storySchema.statics = {
             callback(err, docs);
         });
     },
+    /**
+     * 修改故事状态
+     * @param obj
+     * @param callback
+     * @returns {}
+     */
     updateStoryStatus: function (obj,callback) {
         return this.findOneAndUpdate({_id:obj._id},{status:obj.status},(err,docs)=>{
             if(err) throw err;
+            callback(err,docs);
+        });
+    },
+    /**
+     * 获取今天发布故事中点赞最多的前10位
+     * @param callback
+     * @returns {Promise}
+     */
+    getDataByToday:function (callback) {
+        let today = new Date(new Date().getTime()-24*60*60*1000);
+        let condition = [
+            {
+                $match: {
+                    createDate: {
+                        $gt: today,
+                    }
+                }
+            },
+            {
+                $lookup:{
+                    from: 'supports',
+                    let:{sid:'$_id'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $and: [
+                                        {$eq:['$storyId','$$sid']},
+                                    ]
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'sup'
+                }
+            },
+            {
+                $project:{
+                    storyName:1,
+                    goods:{
+                        $filter:{
+                            input:'$sup',
+                            as: 'good',
+                            cond:{$eq:['$$good.status', 1]}
+                        }
+
+                    },
+                    bads:{
+                        $filter:{
+                            input:'$sup',
+                            as: 'bad',
+                            cond:{$eq:['$$bad.status', 2]}
+                        }
+
+                    }
+                }
+            },
+            {
+              $project:{
+                  storyName:1,
+                  goodSize:{
+                      $size:'$goods'
+                  },
+                  badSize:{
+                      $size:'$bads'
+                  }
+              }
+            },
+            {
+                $sort:{
+                    goodSize:-1
+                }
+            },
+            {
+                $limit: 5
+            }
+
+        ];
+        return this.aggregate(condition).exec((err,docs)=>{
+            if(err) throw  err;
+            callback(err,docs);
+        });
+    },
+
+    getTopStory:function (callback) {
+        let condition = [
+            {
+                $match: {
+                    status:1
+                }
+            },
+            {
+                $lookup:{
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $lookup:{
+                    from: 'likes',
+                    let:{sid:'$_id'},
+                    pipeline:[
+                        {
+                            $match: {
+                                $expr:{
+                                    $and: [
+                                        {$eq:['$storyId','$$sid']},
+                                    ]
+                                }
+
+                            }
+                        }
+                    ],
+                    as: 'like'
+                }
+            },
+            {
+                $project:{
+                    storyName:1,
+                    likeSize:{
+                        $size:'$like'
+                    },
+                    author:"$user.username",
+                    head:"$user.head"
+                }
+            },
+            {
+                $sort:{
+                    likeSize:-1
+                }
+            },
+            {
+                $limit: 20
+            },
+            { $unwind:"$author" },
+            { $unwind:"$head" }
+
+        ];
+        return this.aggregate(condition).exec((err,docs)=>{
+            if(err) throw  err;
             callback(err,docs);
         });
     }

@@ -424,6 +424,46 @@ class AdminUser {
         await promise;
     }
 
+    async getHotStoryToday(ctx){
+        const promise = new Promise( async (resolve, reject) => {
+           await  StoryModel.getDataByToday((err,docs)=>{
+               if(err){
+                   ctx.body = {
+                       code:0
+                   }
+                   reject();
+               }else{
+                   ctx.body = {
+                       data:docs,
+                       code:1
+                   }
+                   resolve();
+               }
+           });
+        });
+        await promise;
+    }
+
+    async getTopStory(ctx){
+        const promise = new Promise( async (resolve, reject) => {
+            await  StoryModel.getTopStory((err,docs)=>{
+                if(err){
+                    ctx.body = {
+                        code:0
+                    }
+                    reject();
+                }else{
+                    ctx.body = {
+                        data:docs,
+                        code:1
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
     /**
      * token验证
      * @param ctx
