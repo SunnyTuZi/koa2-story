@@ -14,6 +14,6 @@ const config = {
         'time': '24h'
     },
     //分组存在时间小时为单位
-    'groupInHour': 0.2
+    'groupInHour': 1
 }
 export default config

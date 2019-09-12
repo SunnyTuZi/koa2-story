@@ -83,6 +83,7 @@ class Chat {
                                 item.size = clients.length;
                             });
                         }
+
                         ctx.body = {
                             code: 1,
                             data: docs
