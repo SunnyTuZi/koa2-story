@@ -32,5 +32,7 @@ router.post('/updateGroupStatus',Admin.updateGroupStatus);
 router.get('/getStoryBar',Admin.getStoryBar);
 router.get('/getHotStoryToday',Admin.getHotStoryToday);
 router.get('/getTopStory',Admin.getTopStory);
+router.get('/getTop5TopiByStory',Admin.getTop5TopiByStory);
+router.get('/getTopicFollowData',Admin.getTopicFollowData);
 
 export default router

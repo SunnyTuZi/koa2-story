@@ -8,6 +8,7 @@
 import AdminUserModel from "../../model/admin/user";
 import UserModel from '../../model/user/userModel';
 import StoryModel from '../../model/story/storyModel';
+import TopicFollow from '../../model/topic/follow';
 import TopicModel from '../../model/topic/topic';
 import BubbleModel from '../../model/bubble/group';
 import VisitModel from  '../../model/visit/visit';
@@ -279,8 +280,9 @@ class AdminUser {
     }
 
     async getHotTopic(ctx){
+        const form = ctx.query;
         const promise = new Promise( async (resolve, reject) => {
-            await TopicModel.getHotTopic((err,docs)=>{
+            await TopicModel.getHotTopic(form,(err,docs)=>{
                 if(err){
                     ctx.body = {
                         code: 0
@@ -463,6 +465,67 @@ class AdminUser {
         });
         await promise;
     }
+    async getTop5TopiByStory(ctx){
+        const promise = new Promise(async (resolve, reject) => {
+            await TopicModel.getTop5TopicByStory((err, docs) => {
+                if (err) {
+                    ctx.body = {
+                        code: 0,
+                        msg: '服务器错误，获取失败~'
+                    }
+                    reject();
+                } else {
+                    ctx.body = {
+                        code: 1,
+                        data:docs
+                    }
+                    resolve();
+                }
+            });
+        });
+        await promise;
+    }
+
+    async getTopicFollowData(ctx){
+        const hander = (num) => num >= 10 ? num : '0' + num;
+        const followPromise = new Promise(async (resolve, reject) => {
+            await TopicFollow.getYearData((err,docs)=>{
+                if(!err){
+                    let dateArr = [];
+                    let montns = new Date().getMonth()+1;
+                    for(let i=0;i<12;i++){
+                        let status = false,item = null;
+                        montns = montns - 1 == 0 ? 12:montns - 1;
+                        for(let j=0;j<docs.length;j++){
+                            if(docs[j]._id == hander(montns)){
+                                status = true;
+                                item  = docs[j];
+                                break;
+                            }
+                        }
+                        if(status){
+                            dateArr.push(item);
+                        }else{
+                            dateArr.push({_id:hander(montns),count:0});
+                        }
+                    }
+                    ctx.body = {
+                        data:dateArr,
+                        code:1
+                    };
+                    resolve();
+                }else{
+                    ctx.body = {
+                        code: 0
+                    };
+                    reject();
+                }
+            });
+        });
+        await followPromise;
+
+    }
+
 
     /**
      * token验证

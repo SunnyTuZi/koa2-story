@@ -42,6 +42,52 @@ topicFollowSchema.statics = {
                     });
                 }
             });
+    },
+    /**
+     * 获取一年内的故事发表
+     * @param callback
+     * @returns {Promise}
+     */
+    getYearData: function (callback) {
+        var years = new Date().getFullYear()-1;
+        var gtDate = new Date(new Date().setFullYear(years));
+        var condition = [
+            {
+                $match:{
+                    createDate:{
+                        $gt: gtDate,
+                    }
+                }
+            },
+            {
+                $project : {
+                    day : {$substr: [{"$add":["$createDate", 28800000]}, 5, 2] },//时区数据校准，8小时换算成毫秒数为8*60*60*1000=288000后分割成YYYY-MM-DD日期格式便于分组
+                    createDate: 1
+                }
+            },
+            {
+                $group:{
+                    _id:'$day',
+                    count: { $sum: 1 },
+                    date:{$last:'$createDate'}
+                }
+            },
+            {
+                $sort:{
+                    date:1
+                }
+            },
+            {
+                $project:{
+                    _id:1,
+                    count:1
+                }
+            }
+        ];
+        return this.aggregate(condition).exec((err, docs) => {
+            if (err) throw err;
+            callback(err, docs);
+        });
     }
 
 }

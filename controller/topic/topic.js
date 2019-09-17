@@ -101,8 +101,6 @@ class Topic {
         });
         await promise;
     }
-
-
 }
 
 export default new Topic();

@@ -225,7 +225,7 @@ Topicchema.statics = {
            callback(err,docs);
         });
     },
-    getHotTopic:function (callback) {
+    getHotTopic:function (form,callback) {
         var condtion = [
             {
                 $lookup:{
@@ -247,13 +247,50 @@ Topicchema.statics = {
                     fans:-1
                 }
             },
-            {$limit:5},
+            {$limit:Number(form.pageSize)},
             {
                 $project:{
                     key:'$_id',
                     topicName:1,
                     topicImg:1,
                     fans:1
+                }
+            }
+        ];
+        return this.aggregate(condtion).exec((err,docs)=>{
+            if(err) throw err;
+            callback(err,docs);
+        });
+    },
+    getTop5TopicByStory:function (callback) {
+        var condtion = [
+            {
+                $lookup:{
+                    from: 'stories',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'story'
+                }
+            },
+            {
+                $addFields:{
+                    size:{
+                        $size:'$story'
+                    }
+                }
+            },
+            {
+                $sort:{
+                    size:-1
+                }
+            },
+            {$limit:5},
+            {
+                $project:{
+                    key:'$_id',
+                    topicName:1,
+                    topicImg:1,
+                    size:1
                 }
             }
         ];
@@ -329,6 +366,7 @@ Topicchema.statics = {
             });
         });
     },
+
 
 }
 
